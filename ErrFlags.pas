@@ -1174,7 +1174,7 @@ procedure CheckSegment(InP, InF, RptF, Notif : String);
     WriteLn(RptFile,' Entries with spaces     : ',ThisSpaces);       (* !! 2.14  20010428 *)
     WriteLn(RptFile,' Entries with tail commas: ',ThisTailCommas);   (* !! 2.14  20010428 *)
     WriteLn(RptFile);
-    WriteLn(RptFile,' // ErrFlags ', ErrFlagsVersion, ' by jonny bergdahl & Johan Zwiekhorst 2:292/100');    (* !! 990405 *)
+    WriteLn(RptFile,' // ErrFlags v', ErrFlagsVersion, ' by Jonny Bergdahl, Johan Zwiekhorst, Niels Joncheere'); (* !! 990405 *)
     Close(RptFile);
     Inc(TotPrefixErr, ThisPrefixErr);         (* !! 2.9  MM0805 *)
     Inc(TotPvtErr, ThisPvtErr);               (* !! 2.9  MM0805 *)
