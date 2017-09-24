@@ -35,8 +35,8 @@ ZONE 2
 ; It is also possible to name the report file. Default report file name
 ; is input file name with extension RPT.
 ;      file name      Notify   [report file]
-FILE   HUB10011.*     292/100  REP10011.TXT
-FILE   NET292.*       292/0    REP292.TXT
+FILE   HUB_80.*       292/80   HUB_80.RPT
+FILE   NET_292.*      292/0    NET_292.RPT
 ;
 ; Key word UNCOMPRESS states the ARC decompression utility to use, and
 ; the parameters to use. The %file% macro will be expanded to the segment

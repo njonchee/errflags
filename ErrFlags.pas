@@ -1,4 +1,4 @@
-{$A+,B-,D-,E-,F-,G-,I+,L-,N-,O-,R-,S-,V-}
+{$A+,B-,D-,I+,O-,R-,S-,V-}
 {$IFDEF VER60}
    {$X-}
 {$ENDIF}
@@ -182,7 +182,6 @@ function Upper(Ins: String): String;   (* Uppercase string conversion *)
 function Proper(Ins: String): String;  (* Lowercase string conversion with 1st char Uppercase *)
   Var
     L : Integer;
-    C : Char;
   begin
     Ins[1] := UpCase(Ins[1]);
     for L := 2 to length(Ins) do
@@ -191,24 +190,24 @@ function Proper(Ins: String): String;  (* Lowercase string conversion with 1st c
   end;
 
 
-function StrToWord(Inp: String): Word;   (* String to Word *)
-
-  Var
-    Value : Word;
-{$IFDEF OS2}                (* !! 2.8 MM0717 *)
-    Error : LongInt;
+function StrToWord(InputString : String) : Word;  (* String to Word *)
+var
+	OutputWord : Word;
+{$IFDEF OS2}                            (* !! 2.8 MM0717 *)
+	Code : LongInt;
 {$ELSE}
-   {$IFDEF WIN32}           (* !! 2.14  20010428 *)
-       Error : LongInt;
-   {$ELSE}
-       Error : Integer;
-   {$ENDIF}
+	{$IFDEF WIN32}                      (* !! 2.14 20010428 *)
+	Code : LongInt;
+	{$ELSE}
+	Code : Integer;
+	{$ENDIF}
 {$ENDIF}
-
-    begin
-    Val(Inp,Value,Error);
-    StrToWord := Value;
-  end;
+begin
+	Val(InputString, OutputWord, Code);
+	if Code <> 0 then
+		OutputWord := 0;
+	StrToWord := OutputWord;
+end;
 
 function WordToStr(Inp : Word):String;      (* Word to String *)
 
@@ -326,11 +325,10 @@ procedure SignOn;     (* Initialises the program and extracts parameters *)
 
   Var
     StdOut : File;
-    L      : Integer;
     Temp   : String;
 
   begin
-    CTLFileName := 'ERRFLAGS.CTL';
+    CTLFileName := 'ErrFlags.ctl';
     Assign(StdOut,'');
     Rewrite(StdOut);
     WriteLn('ErrFlags v', ErrFlagsVersion, '  //  Checks nodelist segments for flag errors');
@@ -363,8 +361,8 @@ procedure ParseCTLfile;    (* Parses the configuration file  *)
 
   begin
     SegmentNum := 0;
-    TABFileName := 'ERRFLAGS.TAB';
-    CMTFileName := 'ERRFLAGS.CMT';
+    TABFileName := 'ErrFlags.tab';
+    CMTFileName := 'ErrFlags.cmt';
     ExecutePath := '';
     ExecuteCmd := '';
     NotifyPath := '';
@@ -609,7 +607,6 @@ function FixFlags(Inp: String; RepNode: String): String;
     L1,
     L2,
     L3,
-    L4,
     UserStart    : Byte;
     temp,
     NrmFlags,
