@@ -1,0 +1,255 @@
+  ErrFlags version 2.15
+  ---------------------
+
+    This program checks incoming nodelist segments for illegal and
+    redundant nodelist flags, and makes sure submitted segments are up to
+    standard. Fully configurable to suit <othernets> as well as fidonet.
+
+    Openware - This program may be used and copied without any cost.
+
+    Copyright 1995, jonny bergdahl data AB - All rights deserved.
+    Modifications (C)1999..2006 by Johan Zwiekhorst, 2:292/100
+
+
+  Disclaimer
+  ----------
+
+    I guarantee that this program will take up some space on your hard
+    disk. That is all. If you decide to run it despite this very meager
+    warranty, however, standard software disclaimers apply. This means:
+    I don't guarantee anything concerning this software and so will not
+    be liable in any way for any damages incurred.
+
+  SEE LICENCE.TXT FOR FURTHER INFORMATION!
+
+
+  Preface
+  -------
+
+    When the original author of this program, Jonny Bergdahl, was the
+    Region 20 Coordinator (RC20) of Fidonet Zone 2, the need for this
+    program arose from all of the hubs and NCs which apparently just
+    couldn't get their act together and submit a correct nodelist segment,
+    for whatever reasons that was.
+
+    This program, once installed, aids such inadequately functioning
+    coordinators to make sure that the submitted segments use no illegal
+    flags, no redundant modem flags and even tidies up the user flag field by
+    reformatting it. It is fully configurable so that new flags may be added
+    as they are approved. It can be used by anone from a hub submitting his
+    hub segment via NC and RC up to the ZC handling a multitude of segment
+    files, even in different networks.
+
+  Installation
+  ------------
+
+    The following files are necessary for the proper functioning of the
+    program (one executable only):
+
+       ERRFLAGS.EXE   Main DOS executable
+       ERRFLAG2.EXE   Main OS/2 executable
+       ERRFLAGw.EXE   Main Win32 executable
+       ERRFLAGS.CTL   Main configuration file
+       ERRFLAGS.TAB   Approved flag setup file
+
+    The following file is not necessary, and may be removed if not used:
+
+       ERRFLAGS.CMT   Text file containing the header that gets copied
+                      to all reports and notifications.
+
+    Copy these files to any directory of your choice, and edit the CTL
+    and CMT files to suit your needs. Insert execution of ERRFLAGS.EXE
+    at the proper place in your mailer batch file, and you're ready to go.
+
+
+  Command line parameters
+  -----------------------
+
+     ErrFlags accepts one command line parameter, and that is the name
+     of the configuration file. The default name is ERRFLAGS.CTL.
+     Overriding this makes it possible to use ErrFlags when coordinating
+     several FTN type networks such as FDNet, IntlNet, ZyXELnet etc,
+     where flag approval may differ from fidonet.
+
+
+  ERRFLAGS.CTL
+  ------------
+
+    This is the configuration file that tells ErrFlags all it has to
+    know at run time. Fire up your favourite ASCII editor and change
+    the parameters based on the comments in this file.
+    Note that all lines preceeded with the ";" character are ignored,
+    thus you will have to remove it for keywords you want to use.
+
+
+  ERRFLAGS.TAB
+  ------------
+
+    This file defines the approved flags in Fidonet Zone 2 at the time
+    of release for this version of ErrFlags. When new flags are approved,
+    this is the file to edit. Fire up your ASCII editor and change the
+    flags according to the comments in the file. You can always freq the
+    latest file from Z2C with the name 'ERRFLAGS.ZC2'.
+
+
+  ERRFLAGS.CMT
+  ------------
+
+    This is just a simple ASCII file that gets copied as a header of all
+    notifications. Change this to suit your needs, and forget it. It might
+    also be used for informational purposes since effectively this text
+    is being sent to all your nodelist segment providers. If you have
+    something important to tell them, this might be a good place.
+
+
+  Messages
+  --------
+
+    ErrFlags will generate four kinds of messages while working.
+    ERROR: this concerns a fatal flaw which is completely removed from the
+           nodelist entry. You will need to check and correct this, as the
+           removal could lead to other problems.
+    WARNING: this is a problem ErrFlags can and will correct itself.
+             The original nodelist segment will have to be adapted in order
+             to avoid future warnings.
+    BEWARE: this is something like a 'second level warning' and will follow
+            a WARNING if (an) additional problem(s) is detected.
+    : a simple message telling you what ErrFlags is doing or is going to
+      do.
+
+
+  Source code
+  -----------
+
+    If there is something in this program that you don't like you can
+    rewrite it, as I am distributing the full source code in the file
+    ERRFLAGS.PAS. You will need a Borland Pascal compatible compiler,
+    and as I have used nothing very special, just about any old
+    version will work when compiling. You might want to check out
+    FreePascal for various platforms (including Linux) if you would like to
+    compile ErrFlags for platforms other than what is included in the
+    distribution archive.
+    If you do change the program I would prefer if you would mail me a copy
+    of the revized source code. Write to Johan Zwiekhorst at
+    2:292/100@fidonet or e-mail me: johan@zwiekhorst.be.
+
+
+  Revision history
+  ----------------
+    Version 2.0
+    -  Initial release.
+
+    Version 2.1
+    -  Increased limit of nodelist segments to 80.
+    -  Added a NoTouch mode for those who don't want to fix other peoples
+       problems.
+
+    Version 2.1.1
+    - Added ERRFLAG2.EXE, the OS/2 executable.
+
+    Version 2.2
+    - Added check/removal of duplicate flags.
+
+    Version 2.3
+    - Added support for wildcards in segment names.
+    - Added support for unarcing incoming segments.
+    - Changed behaviour of reports not to be posted when no errors found,
+      (Ward filled my inbound with reports of no errors :-) but this can
+      be forced anyway with the REPORTALL key word.
+    - Changed the appearance of the report to work with the Mickey Mouse
+      software "ROBO" that Ward is using.
+    - Removed the OS/2 executable, to speed up distribution. Please contact
+      Morten Mertner, 23/0 about availability of this.
+    - Added user flag ENC and redundancy pair V32T - V32B in ERRFLAGS.TAB
+
+    Version 2.4
+    - Fixed bug concerning the inbound path.
+    - Fixed bug concerning reports not being sent to the right system.
+    - Added support for the NOERR keyword that defines what to execute
+      for error free segments.
+    - Removed support for the REPORTALL key word (which btw never worked
+      anyway) that has been obsoleted by the NOERR key word.
+
+    Version 2.5
+    - Fixed bug concerning the inbound path with no-arc files
+    - Fixed problem with command line capitalizing
+
+    Version 2.6
+    - Fixed handling of zone mail flags
+
+    Version 2.7
+    - by Johan Zwiekhorst, 2:292/100. Since Jonny Bergdahl is no longer
+      in Fidonet, I'll take over.
+    - You can now use 200 user flags instead of 80, which was not enough
+      according to ZC2. The maximum length of one flag has been increased
+      from 15 to 32 characters.
+    - The previous wildcard '*' is now '?' in accordance with DOS: it means
+      substitute any one character.
+    - There is still a wildcard '*' and that is also in accordance with
+      DOS: it means any number of characters until end of line or end of
+      string, whatever comes first.
+    - Added the OS/2 executable again.
+
+    Version 2.8
+    - Ben Baker's MAKENL can't handle nodelist entries of more than
+      157 characters, so ErrFlags now checks for that. Lines which
+      exceed 157 characters are shortened and a warning is issued.
+      ErrFlags will first strip characters from the system name, then
+      from the location and then from the flags section. The latter
+      action usually means that the last flag on the line could become
+      corrupted and therefore considered erroneous, which will lead to
+      another warning. An extra warning will be generated when
+      ErrFlags cuts characters from the flags section. ErrFlags will
+      always leave at least one character for the system name and the
+      location.
+    - All flag equality checks are now done case-insensitive.
+      This should simplify the TAB file construction.
+      Nodelist flags (except their parameters) are converted to uppercase.
+
+    Version 2.9
+    - Added nodelist entry prefix checking. Only nothing or the words
+      'Zone', 'Region', 'Host', 'Hub', 'Pvt', 'Hold' and 'Down' are
+      accepted. An error message is issued and the prefix stripped if it's
+      something else.
+    - Added baudrate checking. The baudrate parameter in the nodelist entry
+      is checked against the list in the TAB file. If it deviates, it will
+      be replaced by the BAUDDEFAULT value from the TAB file or 9600 if that
+      is absent.
+    - Added checking for Pvt/phone pairing. If a Pvt prefix is followed by a
+      phonenumber, that phonenumber will be replaced by '-Unpublished-'.
+      If an entry has no prefix but an '-Unpublished-' phonenumber, it will
+      get a 'Pvt' prefix.
+    - Cosmetic changes:
+       + Replaced the '■' character by '#' in ErrFlags messages so it's
+         friendly for codepages other than 437 (default for IBM pc under DOS).
+       + Replaced 'illegal' by 'invalid' because nodelist errors are not
+         against the law!
+
+    Version 2.10
+    - Added phonenumber checking.
+    - Some cosmetic changes.
+
+    Version 2.11
+    - Added DELENTRY feature. This serves to delete sysops from the nodelist
+      which shouldn't be in there, probably because they have been
+      excommunicated. To use this feature, add DELENTRY followed by up to 20
+      names to the TAB file. The names should be in nodelist style, so
+      FirstName_LastName. Use spaces to seperate the different names in the
+      DELENTRY statement.
+
+    Version 2.12
+    - Added check and removal for spaces and trailing commas.
+    - A new CRC/16 is calculated when necessary.
+
+    Version 2.13
+    - A header with CRC/16 is generated when absent.
+    - Added a Windows 32-bit executable (Windows 9x/Me/NT/2000...).
+
+    Version 2.14
+    - Space and tail comma removals are now counted (that means, only the
+      number of entries in which they occur are counted) and the node
+      number of the offending entry is shown so the originator of the
+      nodelist segment can correct the errors more easily.
+
+    Version 2.15
+    - User flags length increase from 32 to 40.
