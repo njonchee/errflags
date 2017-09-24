@@ -1,0 +1,237 @@
+; *******************************************************************
+; ***                        ERRFLAGS.ZC2                         ***
+; *******************************************************************
+; ***  This is the ERRFLAGS.TAB-file in use at the node of ZC/2   ***
+; ***        To be used from ERRFLAGS v2.11 and up only           ***
+; *******************************************************************
+; *** 06.Apr.96 : Approve "ENC" user-flag                         ***
+; *** 10.Jul.96 : New ISDN-flags as per FSC-0091.001, old flags   ***
+; ***              are still accepted.                            ***
+; *** 13.Sep.96 : Removed bogus Z19-entries                       ***
+; *** 14.Sep.96 : Added User-flag Z19                             ***
+; *** 05.Oct.96 : Delete V23-flag                                 ***
+; *** 01.Nov.96 : Old ISDN-U-flags killed                         ***
+; *** 23.Nov.96 : Remaining old ISDN-flags are converted to new   ***
+; *** 23.Nov.96 : Include redundant MNP for ZYX-flag              ***
+; *** 23.Nov.96 : Include X?-flag redundancy-trapping             ***
+; *** 21.Jan.97 : ZMH-flag-error work-around                      ***
+; *** 01.Feb.97 : New ERRFLAGS-version installed, modification    ***
+; ***             of 21.Jan.97 removed                            ***
+; *** 02.Feb.97 : CFLAG-statement implemented                     ***
+; *** 16.Feb.97 : Remove GINTL as per FTS-0005.003                ***
+; *** 29.Apr.97 : Redundant CM-flag with User-flag T** (in test)  ***
+; *** 26.Jun.97 : Approve X2C and X2S user-flags                  ***
+; *** 05.Jul.97 : Include lower-case in certain flags             ***
+; *** 29.Sep.97 : Removed V21 as a flag (=technical nonsense)     ***
+; *** 21.Oct.97 : Include V42b in H16-redundancy plus simplify    ***
+; ***             V32T- and ZYX-redundancy-statement.             ***
+; *** 09.Nov.97 : Removed ZEC as a user-flag                      ***
+; *** 11.Nov.97 : Removed V33-flag                                ***
+; *** 05.Dec.97 : Recognise V34 as redundancy for X2C/X2S         ***
+; *** 28.May.98 : Modify V34+ into V34                            ***
+; *** 14.Oct.98 : V90C (client) and V90S (server) user-flags OK-ed***
+; *** 11.Nov.98 : Userflags IBN, IFC, ITN and IVM implemented to  ***
+; ***             enable IP-connectivity                          ***
+; *** 14.Nov.98 : Corrected error in IP-user-flag and redundancy  ***
+; ***             section                                         ***
+; *** 01.Dec.98 : Include the "IP" user-flag and IP-redundancies  ***
+; *** 14.Jan.99 : Recognise different ZMH via #xx and !xx. Reject ***
+; ***             redundancy with CM. {mainly R50 and R54}        ***
+; *** 21.Jan.99 : Correction of the above                         ***
+; *** 20.Mar.99 : + Allow multiple #xx and !xx flags              ***
+; ***             + Allow X2C X2S V90C V90S as full flags         ***
+; ***             + Allow IP-flags in the flag-field              ***
+; *** 05.Apr.99 : Test V2.7 (adaption by Johan Zwiekhorst)        ***
+; *** 10.Apr.99 : Allow long flags & new IP-flags                 ***
+; *** 15.Apr.99 : Allow IMI ISE ITX IUC IEM flags                 ***
+; *** 15.Jun.99 : Allow Z19 as full flag                          ***
+; *** 25.Jun.99 : Correction redundancy X2/V90                    ***
+; *** 26.Jun.99 : Allow ETX EVY EMA e-mail flags                  ***
+; *** 30.Jun.99 : Allow RPK/NPK (Region/Net Pointlist Keeper)     ***
+; *** 02.Jul.99 : Allow FTS-5001 ISDN-flags                       ***
+; *** 09.Jul.99 : Include IFT-flag as per FTS-5001                ***
+; *** 10.Jul.99 : Include SDS/SMH user-flags as per FTS-5001      ***
+; *** 13.Sep.99 : Include CDP-user-flag                           ***
+; *** 06.Nov.99 : Discontinue X2/V90/IP user-flags                ***
+; *** 05.Dec.99 : Correct IP-redundancy                           ***
+; *** 19.Feb.00 : Discontinue old ISDN user-flags                 ***
+; *** 14 May 00 : Discontinue old Z19 user-flag                   ***
+; ***             + new redundancy-statement for Z19-flag         ***
+; *** 23 Jul 00 : Release of V2.8                                 ***
+; ***             + Check for length of segment-entry, truncation ***
+; ***               if longer than 157                            ***
+; ***             + Flags are checked case-insensitive and con-   ***
+; ***               verted to uppercase except for their parame-  ***
+; ***               ters                                          ***
+; *** 04 Aug 00 : Double Z19-flag and commented user-flags remo-  ***
+; ***             ved (cosmetic changes only)                     ***
+; *** 05 Aug 00 : Release of V2.9                                 ***
+; ***             + Added BAUDRATE for baudrate parameter check.  ***
+; ***               This must be IDENTICAL to the one in your     ***
+; ***               nodelist-segment-tool control file!           ***
+; ***             + "Pvt" + "phone-number" is now detected as     ***
+; ***               "unpublished" without "pvt".                  ***
+; ***             + line-prefixes are now also checked            ***
+; *** 29 Aug 00 : Release of V2.11                                ***
+; ***             + DELENTRY-statement to remove selected sysops  ***
+; ***               from the nodelist, e.g. after excommunication ***
+; *** 26 Mar 01 : Introduction of the "PING"-flag                 ***
+; *******************************************************************
+;
+; ? matches any characters
+; $ matches any characters A-Z and a-z
+; @ matches any character 0-9
+; * any string until comma or end-of-line
+;
+;      +-------------------------------+
+;      !  BAUDRATE parameter checking  !
+;      +-------------------------------+
+;
+BAUDDEFAULT 9600
+BAUDRATE 300 1200 2400 4800 9600 14400 16800 19200 28800 33600
+;
+;      +-------------------------------+
+;      !          Modem flags          !
+;      +-------------------------------+
+;      !       CCITT/ITU-Classics      !
+;      +-------------------------------+
+;
+FLAGS V22 V22B V29 V32 V32B V34 V42 V42B MNP
+FLAGS V32T VFC
+;
+;      +-------------------------------+
+;      !       US-Robotics             !
+;      +-------------------------------+
+;
+FLAGS H96 HST H14 H16
+;
+;      +-------------------------------+
+;      !       ZyXEL                   !
+;      +-------------------------------+
+;
+FLAGS ZYX Z19
+;
+;      +-------------------------------+
+;      !       56K                     !
+;      +-------------------------------+
+;
+FLAGS X2C X2S V90C V90S
+;
+;      +-------------------------------+
+;      !       ISDN                    !
+;      +-------------------------------+
+;
+FLAGS ISDN V110L V110H V120L V120H X75
+;
+;      +-------------------------------+
+;      !       Old Stuff               !
+;      +-------------------------------+
+;
+FLAGS MAX PEP CSP
+;
+;      +--------------------------------+
+;      !          Mailer flags          !
+;      +--------------------------------+
+;
+FLAGS CM MO LO MN XA XB XC XP XR XW XX GUUCP
+;
+;      +-----------------------------+
+;      !          ZMH flags          !
+;      +-----------------------------+
+;
+FLAGS #0@ #1@ #20 #21 #22 #23 #24
+FLAGS !0@ !1@ !20 !21 !22 !23 !24
+FLAGS #@@#@@
+FLAGS !@@!@@
+FLAGS #@@#@@#@@
+FLAGS !@@!@@!@@
+;
+;      +------------------------------+
+;      !        IP flags              !
+;      +------------------------------+
+;
+FLAGS IBN IBN:@ IBN:@@ IBN:@@@ IBN:@@@@ IBN:@@@@@
+FLAGS IFC IFC:@ IFC:@@ IFC:@@@ IFC:@@@@ IFC:@@@@@
+FLAGS IFT IFT:@ IFT:@@ IFT:@@@ IFT:@@@@ IFT:@@@@@
+FLAGS ITN ITN:@ ITN:@@ ITN:@@@ ITN:@@@@ ITN:@@@@@
+FLAGS IVM IVM:@ IVM:@@ IVM:@@@ IVM:@@@@ IVM:@@@@@
+FLAGS IP
+FLAGS IEM IEM:*
+FLAGS ITX ITX:*
+FLAGS IMI IMI:*
+FLAGS ISE ISE:*
+FLAGS IUC IUC:*
+;
+;      +------------------------------+
+;      !        E-mail flags          !
+;      +------------------------------+
+;
+FLAGS EMA EMA:*
+FLAGS ETX ETX:*
+FLAGS EVY EVY:*
+;
+;      +------------------------------+
+;      !        Other flags           !
+;      +------------------------------+
+;
+FLAGS PING
+;
+;      +------------------------------+
+;      !          USER flags          !
+;      +------------------------------+
+;
+USER NC REC NEC K12 ENC
+USER RPK NPK
+USER SDS SMH
+USER CDP
+;
+;      +-----------------------------------------+
+;      !          Online time user flag          !
+;      +-----------------------------------------+
+;
+USER T$$
+;
+;      +-----------------------------------------------------------------+
+;      !  Convert certain flags, first value gets changed to the second  !
+;      +-----------------------------------------------------------------+
+;
+CONVERT ISDNA V110L
+CONVERT ISDNB V110H
+CONVERT ISDNC X75
+CONVERT V34+ V34
+;
+;      +-----------------------------------------+
+;      !          Redundancy definition          !
+;      +-----------------------------------------+
+;
+REDUNDANT HST MNP
+REDUNDANT V32B V32
+REDUNDANT V42B V42 MNP
+REDUNDANT H14 HST MNP
+REDUNDANT H16 HST H14 MNP V42 V42B V42b
+REDUNDANT V32T V32 V32B
+REDUNDANT XA XW XR XP XB XC XX
+REDUNDANT XB XW XR XP
+REDUNDANT XC XW XR XX
+REDUNDANT XR XW
+REDUNDANT XX XW
+REDUNDANT ZYX V32 V32B V42 V42B MNP
+REDUNDANT Z19 ZYX V32 V32B V42 V42B MNP
+REDUNDANT CM T??
+REDUNDANT X2S X2C V34
+REDUNDANT X2C V34
+REDUNDANT V90S V90C V34
+REDUNDANT V90C V34
+REDUNDANT IBN IP
+REDUNDANT IFC IP
+REDUNDANT ITN IP
+REDUNDANT IVM IP
+REDUNDANT #@@ !@@
+;
+;      +-----------------------------------------+
+;      !          Special statements             !
+;      +-----------------------------------------+
+;
+;DELENTRY
+;
+;                      // end of file //
