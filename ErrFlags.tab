@@ -76,6 +76,32 @@
 ; ***             + DELENTRY-statement to remove selected sysops  ***
 ; ***               from the nodelist, e.g. after excommunication ***
 ; *** 26 Mar 01 : Introduction of the "PING"-flag                 ***
+; *** 21 Apr 01 : Release of V2.12                                ***
+; ***             - Added check and removal for spaces and        ***
+; ***               trailing commas.                              ***
+; ***             - A new CRC/16 is calculated when necessary.    ***
+; *** 22 Apr 01 : Release of V2.13                                ***
+; ***             - A header with CRC/16 is always generated if   ***
+; ***               absent.                                       ***
+; ***             - Windows 9x/Me/NT/2000 version added           ***
+; *** 28 Apr 01 : Release of V2.14                                ***
+; ***             - Counter mechanism adapted                     ***
+; *** 18 Dec 01 : Approval of user-flags MRVIA, RVIA and DRVIA    ***
+; *** 03 May 02 : MRVIA, RVIA and DRVIA dropped / no success      ***
+; *** 03 Aug 03 : Allow DOM, DO4, DO3 and DO2 flags to enable     ***
+; ***             root-domain testing                             ***
+; *** 11 Jun 04 : ICM-flag introduced                             ***
+; *** 18 Jun 04 : Redundancy CM-ICM included                      ***            
+; *** 31 Aug 05 : INA-flag introduced                             ***
+; *** 27 Dec 08 : IRD-flag introduced                             ***
+; *** 01 Jan 12 : NTM-flag introduced. Indicates a system         ***
+; ***              providing mailservices with non-Troika distri- ***
+; ***              buted netmail, echomail and files              ***
+; *** 12 Jan 12 : CTBM-flag introduced                            ***
+; ***              "Coordinator Troika Black List"                ***
+: *** 27 AUG 12 : Txy is propagated as full flag. Dual usage with ***
+; ***              the same USER-flag for an undetermined period  ***
+; ***              of time is granted.                            ***
 ; *******************************************************************
 ;
 ; ? matches any characters
@@ -161,29 +187,47 @@ FLAGS ITX ITX:*
 FLAGS IMI IMI:*
 FLAGS ISE ISE:*
 FLAGS IUC IUC:*
+FLAGS INA:*
+FLAGS IRD:*
 ;
 ;      +------------------------------+
 ;      !        E-mail flags          !
 ;      +------------------------------+
 ;
+FLAGS EVY EVY:*
 FLAGS EMA EMA:*
 FLAGS ETX ETX:*
-FLAGS EVY EVY:*
 ;
 ;      +------------------------------+
 ;      !        Other flags           !
 ;      +------------------------------+
 ;
-FLAGS PING
+FLAGS PING ICM
 ;
+;      +------------------------------------+
+;      !          Online time flag          !
+;      +------------------------------------+
+;
+FLAGS T$$
 ;      +------------------------------+
 ;      !          USER flags          !
 ;      +------------------------------+
 ;
-USER NC REC NEC K12 ENC
+USER NC REC NEC ENC
 USER RPK NPK
 USER SDS SMH
 USER CDP
+USER DOM:* 
+USER DO4:* 
+USER DO3:* 
+USER DO2:*
+USER NTM
+;
+;      +--------------------------------------+
+;      !          Removed USER flags          !
+;      +--------------------------------------+
+;
+; USER K12 (05.Sep.2003)
 ;
 ;      +-----------------------------------------+
 ;      !          Online time user flag          !
@@ -227,11 +271,12 @@ REDUNDANT IFC IP
 REDUNDANT ITN IP
 REDUNDANT IVM IP
 REDUNDANT #@@ !@@
+REDUNDANT CM ICM
 ;
 ;      +-----------------------------------------+
 ;      !          Special statements             !
 ;      +-----------------------------------------+
 ;
-;DELENTRY
+; DELENTRY xxxxxxxxxx_xxxxxxxxxx
 ;
 ;                      // end of file //
