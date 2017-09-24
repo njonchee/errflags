@@ -19,11 +19,10 @@
 
 program ErrFlags;
 
-(*  ErrFlags               //  Checks nodelist segments for flag errors     *)
-(*  Copyright 1995, jonny bergdahl data AB. Freeware. All rights deserved   *)
-(*  (C)1999..2006 by Johan Zwiekhorst (since mr. Bergdahl stopped)          *)
-
-(* Send comments to Johan Zwiekhorst at 2:292/100@fidonet                   *)
+(* ErrFlags v2.16  //  Checks nodelist segments for flag errors.
+   Copyright 1995-1997 jonny bergdahl data AB. Freeware. All rights deserved.
+   Modifications (c) 1999-2006 by Johan Zwiekhorst, 2:292/100
+   Modifications (c) 2017 by Niels Joncheere, 2:292/789                       *)
 
 (* Revision history                                                         *)
 (* Date     Version  Change                                                 *)
@@ -58,6 +57,10 @@ program ErrFlags;
 (* 20010428 2.14     Made indications for space and tail comma removal      *)
 (*                   more informative for coordinators                      *)
 (* 20060525 2.15     Increase user flag length from 32 to 40 chars          *)
+(* Since Johan Zwiekhorst is no longer active in FidoNet, Niels Joncheere
+   will take over development from version 2.16 onwards.                      *)
+(* 20170924 2.16     Removed check for presence of Pvt prefix if phone number
+                     is -Unpublished-.                                        *)
 
 {$IFDEF OS2}
    Uses Use32, DOS;
@@ -70,7 +73,7 @@ program ErrFlags;
 {$ENDIF}
 
 Const
-  ErrFlagsVersion = '2.15';
+  ErrFlagsVersion = '2.16';
 
 
   Unpub       = '-Unpublished-';
@@ -331,9 +334,10 @@ procedure SignOn;     (* Initialises the program and extracts parameters *)
     CTLFileName := 'ErrFlags.ctl';
     Assign(StdOut,'');
     Rewrite(StdOut);
-    WriteLn('ErrFlags v', ErrFlagsVersion, '  //  Checks nodelist segments for flag errors');
-    WriteLn('Copyright 1995-1997 jonny bergdahl data AB. Freeware. All rights deserved');
-    writeln('Modifications (C)1999-2006 by Johan Zwiekhorst, 2:292/100');
+    WriteLn('ErrFlags v', ErrFlagsVersion, '  //  Checks nodelist segments for flag errors.');
+    WriteLn('Copyright 1995-1997 jonny bergdahl data AB. Freeware. All rights deserved.');
+    WriteLn('Modifications (c) 1999-2006 by Johan Zwiekhorst, 2:292/100');
+    WriteLn('Modifications (c) 2017 by Niels Joncheere, 2:292/789');
     WriteLn;
     Temp := Upper(ParamStr(1));
     If (Temp[2]='?') then
@@ -826,13 +830,6 @@ begin
           if Prefix = '' then Prefix := 'Pvt';
           Inc(ThisPhoneErr)
          end;
-      If (PhoneNr = Unpub) and (Prefix = '') then
-        begin
-          WriteLn('# WARNING: unpublished phonenumber with empty instead of Pvt prefix for ', CurrentNode);
-          WriteLn(RptFile,' WARNING: unpublished phonenumber with empty instead of Pvt prefix for ', CurrentNode);
-          Prefix := 'Pvt';
-          Inc(ThisPvtErr)
-        end;
       If (Prefix = 'Pvt') and (PhoneNr <> Unpub) then
         begin
           WriteLn('# WARNING: Pvt prefix should have unpublished phonenumber for ', CurrentNode);

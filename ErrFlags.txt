@@ -1,14 +1,13 @@
-  ErrFlags version 2.15
+  ErrFlags version 2.16
   ---------------------
 
     This program checks incoming nodelist segments for illegal and
     redundant nodelist flags, and makes sure submitted segments are up to
     standard. Fully configurable to suit <othernets> as well as fidonet.
 
-    Openware - This program may be used and copied without any cost.
-
-    Copyright 1995, jonny bergdahl data AB - All rights deserved.
-    Modifications (C)1999..2006 by Johan Zwiekhorst, 2:292/100
+    Copyright 1995-1997 jonny bergdahl data AB. Freeware. All rights deserved.
+    Modifications (c) 1999-2006 by Johan Zwiekhorst, 2:292/100
+    Modifications (c) 2017 by Niels Joncheere, 2:292/789
 
 
   Disclaimer
@@ -253,3 +252,6 @@
 
     Version 2.15
     - User flags length increase from 32 to 40.
+
+    Version 2.16
+    - Removed check for presence of Pvt prefix if phone number is -Unpublished-.
