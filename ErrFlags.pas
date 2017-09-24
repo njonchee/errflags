@@ -212,15 +212,13 @@ begin
 	StrToWord := OutputWord;
 end;
 
-function WordToStr(Inp : Word):String;      (* Word to String *)
-
-  Var
-    Temp : String[12];
-
-  begin
-    Str(Inp,Temp);
-    WordToStr := Temp;
-  end;
+function WordToStr(InputWord : Word) : String;    (* Word to String *)
+var
+	OutputString : String[12];
+begin
+	Str(InputWord, OutputString);
+	WordToStr := OutputString;
+end;
 
 function AddBackslash(var Inp : String):String;
 
