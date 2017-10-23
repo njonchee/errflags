@@ -1,6 +1,6 @@
 *~
 *.o
 *.RPT
-ErrFlags
+errflags
 HUB_80.TXT
 NET_292.TXT

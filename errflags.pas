@@ -19,7 +19,7 @@
 
 program ErrFlags;
 
-(* ErrFlags v2.16  //  Checks nodelist segments for flag errors.
+(* ErrFlags v2.17  //  Checks nodelist segments for flag errors.
    Copyright 1995-1997 jonny bergdahl data AB. Freeware. All rights deserved.
    Modifications (c) 1999-2006 by Johan Zwiekhorst, 2:292/100
    Modifications (c) 2017 by Niels Joncheere, 2:292/789                       *)
@@ -61,6 +61,8 @@ program ErrFlags;
    will take over development from version 2.16 onwards.                      *)
 (* 20170924 2.16     Removed check for presence of Pvt prefix if phone number
                      is -Unpublished-.                                        *)
+(* 20171023 2.17     Try to load errflags.ctl/tab/cmt files if ErrFlags.ctl
+                     /tab/cmt files cannot be found.                          *)
 
 {$IFDEF OS2}
    Uses Use32, DOS;
@@ -73,8 +75,10 @@ program ErrFlags;
 {$ENDIF}
 
 Const
-  ErrFlagsVersion = '2.16';
-
+	ErrFlagsVersion = '2.17';
+	DEFAULT_CTL_FILE_NAMES : Array[1..2] of String = ('ErrFlags.ctl', 'errflags.ctl');
+	DEFAULT_TAB_FILE_NAMES : Array[1..2] of String = ('ErrFlags.tab', 'errflags.tab');
+	DEFAULT_CMT_FILE_NAMES : Array[1..2] of String = ('ErrFlags.cmt', 'errflags.cmt');
 
   Unpub       = '-Unpublished-';
 
@@ -104,9 +108,12 @@ Type
 
 Var
   RptFile  : Text;
-  CMTFileName,
-  CTLFileName,
-  TABFileName : String[13];
+  ctlFileName,
+  tabFileName,
+  cmtFileName : String[13];
+  ctlFile,
+  tabFile,
+  cmtFile : Text;
   DefaultZone,
   ThisZone    : Word;
   DefaultNet,
@@ -329,7 +336,6 @@ procedure SignOn;     (* Initialises the program and extracts parameters *)
     Temp   : String;
 
   begin
-    CTLFileName := 'ErrFlags.ctl';
     Assign(StdOut,'');
     Rewrite(StdOut);
     WriteLn('ErrFlags v', ErrFlagsVersion, '  //  Checks nodelist segments for flag errors.');
@@ -354,32 +360,60 @@ procedure SignOn;     (* Initialises the program and extracts parameters *)
     GetDir(0,OldDir);
   end;
 
+function OpenConfigFileHelper(configFileNames : Array of String; var configFileName : String; var configFile : Text; haltOnError : Boolean) : Boolean;
+	var
+		i     : Integer;
+		error : Boolean;
+	begin
+		for i := 1 to length(configFileNames) do
+			begin
+				configFileName := configFileNames[i - 1];
+				Assign(configFile, configFileName);
+				{$I-}
+				Reset(configFile);
+				{$I+}
+				if lastError = 0 then
+					begin
+						error := false;
+						break;
+					end
+				else
+					error := true;
+			end;
+		if error and haltOnError then
+			begin
+				WriteLn('! Unable to open ', configFileNames[0], ' - exiting...');
+				Halt(1);
+			end;
+		OpenConfigFileHelper := error;
+	end;
+
+function OpenConfigFile(defaultConfigFileNames : Array of String; var configFileName : String; var configFile : Text; haltOnError : Boolean) : Boolean;
+	var
+		error : Boolean;
+	begin
+		if configFileName = '' then
+			error := OpenConfigFileHelper(defaultConfigFileNames, configFileName, configFile, haltOnError)
+		else
+			error := OpenConfigFileHelper([configFileName], configFileName, configFile, haltOnError);
+		OpenConfigFile := error;
+	end;
+
 procedure ParseCTLfile;    (* Parses the configuration file  *)
 
   Var
-    CTLFile : Text;
     Temp1   : String;
     Temp2   : String;
 
   begin
     SegmentNum := 0;
-    TABFileName := 'ErrFlags.tab';
-    CMTFileName := 'ErrFlags.cmt';
     ExecutePath := '';
     ExecuteCmd := '';
     NotifyPath := '';
     NotifyCmd := '';
     NoErrCmd := '';
     Touch := True;                          (* !! 960127 *)
-    Assign(CTLFile,CTLFileName);
-    {$I-}
-    Reset(CTLFile);
-    {I+}
-    If LastError<>0 then
-      begin
-        WriteLn('! Unable to open ',CTLFileName,' - exiting...');
-        Halt(1);
-      end;
+	OpenConfigFile(DEFAULT_CTL_FILE_NAMES, ctlFileName, ctlFile, true);
     While not EOF(CTLFile) do
       begin
         {$I-}
@@ -439,7 +473,6 @@ procedure ParseCTLfile;    (* Parses the configuration file  *)
 procedure ParseTabFile;    (* Parses the approved flag file *)
 
   Var
-    TabFile : Text;
     Temp1,
     Temp2,
     UTemp2  : String;
@@ -453,15 +486,7 @@ procedure ParseTabFile;    (* Parses the approved flag file *)
     ConvNum := 0;                      (* !! 2.8  MM0717 *)
     ReduntNum := 0;
     FillChar(DelEntry,sizeof(DelEntry),0); (* !! 2.11 MM0901 *)
-    Assign(TabFile,TabFileName);
-    {$I-}
-    Reset(TabFile);
-    {I+}
-    If LastError<>0 then
-      begin
-        WriteLn('! Unable to open ',TabFileName,' - exiting...');
-        Halt(1);
-      end;
+	OpenConfigFile(DEFAULT_TAB_FILE_NAMES, tabFileName, tabFile, true);
     While not EOF(TabFile) do
       begin
         {$I-}
@@ -1061,19 +1086,15 @@ procedure CheckSegment(InP, InF, RptF, Notif : String);
         WriteLn('! Unable to create ',InF,' - error ',WordToStr(LastErr));
         Exit;
       end;
-    Assign(TmpFile,CMTFileName);
-    {$I-}
-    Reset(TmpFile);
-    {$I+}
-    If LastError=0 then
+    if not OpenConfigFile(DEFAULT_CMT_FILE_NAMES, cmtFileName, cmtFile, false) then
       begin
-        while not EOF(TmpFile) do
+        while not EOF(cmtFile) do
           begin
-            Readln(TmpFile,Temp);
+            ReadLn(cmtFile, temp);
             WriteLn(RptFile,Temp);
           end;
         writeLn(RptFile);
-        close(TmpFile);
+        close(cmtFile);
       end;
     WriteLn(#10'# Processing file ',InF);
     WriteLn(RptFile,#10' Processing file ',InF);
