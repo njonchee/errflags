@@ -57,21 +57,16 @@ program ErrFlags;
 (* 20010428 2.14     Made indications for space and tail comma removal      *)
 (*                   more informative for coordinators                      *)
 (* 20060525 2.15     Increase user flag length from 32 to 40 chars          *)
-(* Since Johan Zwiekhorst is no longer active in FidoNet, Niels Joncheere
-   will take over development from version 2.16 onwards.                      *)
-(* 20170924 2.16     Removed check for presence of Pvt prefix if phone number
-                     is -Unpublished-.                                        *)
-(* 20171023 2.17     Try to load errflags.ctl/tab/cmt files if ErrFlags.ctl
-                     /tab/cmt files cannot be found.                          *)
+(* Since Johan Zwiekhorst is no longer active in FidoNet, Niels Joncheere     *)
+(* will take over development from version 2.16 onwards.                      *)
+(* 20170924 2.16     Removed check for presence of Pvt prefix if phone number *)
+(*                   is -Unpublished-.                                        *)
+(* 20171023 2.17     Added support for a realistic Linux setup.               *)
 
-{$IFDEF OS2}
-   Uses Use32, DOS;
+{$IFDEF LINUX}
+Uses dos, process, unix;
 {$ELSE}
-  {$IFDEF WIN32}
-     Uses Use32, DOS;
-  {$ELSE}
-     Uses DOS;
-  {$ENDIF}
+Uses dos;
 {$ENDIF}
 
 Const
@@ -79,6 +74,7 @@ Const
 	DEFAULT_CTL_FILE_NAMES : Array[1..2] of String = ('ErrFlags.ctl', 'errflags.ctl');
 	DEFAULT_TAB_FILE_NAMES : Array[1..2] of String = ('ErrFlags.tab', 'errflags.tab');
 	DEFAULT_CMT_FILE_NAMES : Array[1..2] of String = ('ErrFlags.cmt', 'errflags.cmt');
+	FILE_SEPARATOR : String = '/';
 
   Unpub       = '-Unpublished-';
 
@@ -97,7 +93,7 @@ Const
 Type
   TSegmentFile = record
                    FileName : String[13];
-                   RptFile  : String[13];
+                   RptFile  : String[255];
                    Notifier : String[24];
                  end;
   TFlag        = string[40];                      (* !! 2.7 990405, was 15 !! 2.15 060525, was 32 *)
@@ -110,7 +106,7 @@ Var
   RptFile  : Text;
   ctlFileName,
   tabFileName,
-  cmtFileName : String[13];
+  cmtFileName : String[255];
   ctlFile,
   tabFile,
   cmtFile : Text;
@@ -227,15 +223,13 @@ begin
 	WordToStr := OutputString;
 end;
 
-function AddBackslash(var Inp : String):String;
-
-  begin
-    If (Inp='') or (Inp[Length(Inp)]='\')
-      then
-        AddBackslash := Inp
-      else
-        AddBackslash := Inp+'\';
-  end;
+function AddFileSeparator(s : String) : String;
+begin
+	if (s = '') or (s[length(s)] = FILE_SEPARATOR) then
+		AddFileSeparator := s
+	else
+		AddFileSeparator := s + FILE_SEPARATOR;
+end;
 
 function FirstWord(var Instr:String):String;
                              (* This function returns the first word in a *)
@@ -399,6 +393,33 @@ function OpenConfigFile(defaultConfigFileNames : Array of String; var configFile
 		OpenConfigFile := error;
 	end;
 
+procedure ExecuteLinuxCommand(var cmd : String);
+	var
+		proc : TProcess;
+	begin
+		proc := TProcess.Create(nil);
+		proc.CommandLine := ((cmd));
+		proc.Options := [poUsePipes, poWaitOnExit];
+		proc.Execute;
+	end;
+
+procedure ExecuteDosCommand(var cmd : String);
+	begin
+		Exec(GetEnv('COMSPEC'), '/C ' + cmd);
+	end;
+
+procedure ExecuteCommand(lbl : String; var cmd : String; var oldDir : String);
+	begin
+		WriteLn('# ', lbl, ':');
+		WriteLn('  ', cmd);
+{$IFDEF LINUX}
+		ExecuteLinuxCommand(cmd);
+{$ELSE}
+		ExecuteDosCommand(cmd);
+{$ENDIF}
+		ChDir(oldDir);
+	end;
+
 procedure ParseCTLfile;    (* Parses the configuration file  *)
 
   Var
@@ -465,8 +486,7 @@ procedure ParseCTLfile;    (* Parses the configuration file  *)
               UnCompress := StripStr(Temp1);
           end;
       end;
-   If (InboundPath<>'') and (InboundPath[Length(InboundPath)]<>'\') then
-     InboundPath := InboundPath+'\';
+   inboundPath := AddFileSeparator(inboundPath);
    close(CTLFile);
  end;
 
@@ -975,7 +995,7 @@ procedure CheckSegment(InP, InF, RptF, Notif : String);
       ExtractFile := '';
       If Pos('*',InFile)=0 then
         begin
-          ExtractFile := AddBackSlash(Inp)+InFile;
+          ExtractFile := AddFileSeparator(Inp) + InFile;
           Exit;
         end;
       If InFile[Succ(Pos('.',InFile))]='A' then  (* UnARC this one *)
@@ -1006,12 +1026,12 @@ procedure CheckSegment(InP, InF, RptF, Notif : String);
             end;
           ChDir(OldDir);
         end;
-      FindFirst(AddBackSlash(Inp)+Copy(InFile,1,Pos('.',InFile))+'*',Archive,S);
+      FindFirst(AddFileSeparator(Inp) + Copy(InFile, 1, Pos('.', InFile)) + '*', Archive, S);
       if DOSError=0 then
         begin
           While DOSError=0 do
             begin
-              ExtractFile := AddBackSlash(Inp)+S.Name;
+              ExtractFile := AddFileSeparator(Inp) + S.Name;
               FindNext(S);
             end;
         end;
@@ -1103,6 +1123,12 @@ procedure CheckSegment(InP, InF, RptF, Notif : String);
     While not Eof(InFile) Do
       begin
         ReadLn(InFile,Temp);
+		if temp[1] = chr(26) then (* Ignore 'soft' EOF character *)
+			begin
+				temp := Copy(temp, 2, length(temp) - 1);
+				if temp = '' then
+					continue;
+			end;
         if not CalcCRC then
           begin
             CalcCRC := true;
@@ -1168,30 +1194,30 @@ procedure CheckSegment(InP, InF, RptF, Notif : String);
             exit;
           end;
       end;
-    WriteLn(#13#10'* SUMMARY REPORT FOR THIS NODELIST SEGMENT:');  (* !! 2.10  MM0811 *)
-    WriteLn('> Prefix errors           : ',ThisPrefixErr);
-    WriteLn('> Pvt/phone errors        : ',ThisPvtErr);
-    Writeln('> Phonenumber errors      : ',ThisPhoneErr);
-    WriteLn('> Baudrate errors         : ',ThisBaudErr);
-    WriteLn('> Flag errors             : ',ThisFlagErr);
-    WriteLn('> User flag errors        : ',ThisUserErr);
-    WriteLn('> Redundant flags         : ',ThisReduErr);
-    WriteLn('> Duplicate flags         : ',ThisDupErr);
-    WriteLn('> Case conversions        : ',ThisCaseConv);
-    WriteLn('> Entries with spaces     : ',ThisSpaces);              (* !! 2.14  20010428 *)
-    WriteLn('> Entries with tail commas: ',ThisTailCommas);          (* !! 2.14  20010428 *)
-    Writeln(RptFile,#13#10' SUMMARY REPORT FOR THIS NODELIST SEGMENT:');
-    WriteLn(RptFile,' Prefix errors           : ',ThisPrefixErr);
-    WriteLn(RptFile,' Pvt/phone errors        : ',ThisPvtErr);
-    Writeln(RptFile,' Phonenumber errors      : ',ThisPhoneErr);
-    WriteLn(RptFile,' Baudrate errors         : ',ThisBaudErr);
-    WriteLn(RptFile,' Flag errors             : ',ThisFlagErr);
-    WriteLn(RptFile,' User flag errors        : ',ThisUserErr);
-    WriteLn(RptFile,' Redundant flags         : ',ThisReduErr);
-    WriteLn(RptFile,' Duplicate flags         : ',ThisDupErr);
-    WriteLn(RptFile,' Case conversions        : ',ThisCaseConv);
-    WriteLn(RptFile,' Entries with spaces     : ',ThisSpaces);       (* !! 2.14  20010428 *)
-    WriteLn(RptFile,' Entries with tail commas: ',ThisTailCommas);   (* !! 2.14  20010428 *)
+    WriteLn(#10'* SUMMARY REPORT FOR THIS NODELIST SEGMENT:');  (* !! 2.10  MM0811 *)
+    WriteLn('> Prefix errors            : ', ThisPrefixErr);
+    WriteLn('> Pvt/phone errors         : ', ThisPvtErr);
+    Writeln('> Phonenumber errors       : ', ThisPhoneErr);
+    WriteLn('> Baudrate errors          : ', ThisBaudErr);
+    WriteLn('> Flag errors              : ', ThisFlagErr);
+    WriteLn('> User flag errors         : ', ThisUserErr);
+    WriteLn('> Redundant flags          : ', ThisReduErr);
+    WriteLn('> Duplicate flags          : ', ThisDupErr);
+    WriteLn('> Case conversions         : ', ThisCaseConv);
+    WriteLn('> Entries with spaces      : ', ThisSpaces);              (* !! 2.14  20010428 *)
+    WriteLn('> Entries with tail commas : ', ThisTailCommas);          (* !! 2.14  20010428 *)
+    Writeln(RptFile,#10' SUMMARY REPORT FOR THIS NODELIST SEGMENT:');
+    WriteLn(RptFile,' Prefix errors            : ', ThisPrefixErr);
+    WriteLn(RptFile,' Pvt/phone errors         : ', ThisPvtErr);
+    Writeln(RptFile,' Phonenumber errors       : ', ThisPhoneErr);
+    WriteLn(RptFile,' Baudrate errors          : ', ThisBaudErr);
+    WriteLn(RptFile,' Flag errors              : ', ThisFlagErr);
+    WriteLn(RptFile,' User flag errors         : ', ThisUserErr);
+    WriteLn(RptFile,' Redundant flags          : ', ThisReduErr);
+    WriteLn(RptFile,' Duplicate flags          : ', ThisDupErr);
+    WriteLn(RptFile,' Case conversions         : ', ThisCaseConv);
+    WriteLn(RptFile,' Entries with spaces      : ', ThisSpaces);       (* !! 2.14  20010428 *)
+    WriteLn(RptFile,' Entries with tail commas : ', ThisTailCommas);   (* !! 2.14  20010428 *)
     WriteLn(RptFile);
     WriteLn(RptFile,' // ErrFlags v', ErrFlagsVersion, ' by Jonny Bergdahl, Johan Zwiekhorst, Niels Joncheere'); (* !! 990405 *)
     Close(RptFile);
@@ -1235,10 +1261,7 @@ procedure CheckSegment(InP, InF, RptF, Notif : String);
     If Pos('%FILE%',Temp)<>0 then
       Temp := Copy(Temp,1,Pred(Pos('%FILE%',Upper(Temp))))+RptF+
             Copy(Temp,Pos('%FILE%',Upper(Temp))+6,255);
-    WriteLn('# Notify:');
-    WriteLn('  ',Temp);
-    Exec(GetEnv('COMSPEC'),'/C '+Temp);
-    ChDir(OldDir);
+	ExecuteCommand('Notify', Temp, OldDir);
   end;
 
 Var
@@ -1268,21 +1291,19 @@ begin                          (* Main program  *)
       {$I+}
       If LastError<>0 then
         writeLn('! Unable to CD to path ',ExecutePath, ' - error ',LastErr);
-      WriteLn('# Execute:');
-      WriteLn('  ',ExecuteCmd);
-      Exec(GetEnv('COMSPEC'),'/C '+ExecuteCmd);
+      ExecuteCommand('Execute', ExecuteCmd, OldDir);
       ChDir(OldDir);
     end;
-  WriteLn(#13#10'* FINAL REPORT FOR ALL PROCESSED NODELIST SEGMENTS:');  (* !! 2.10  MM0811 *)
-  WriteLn('* Total prefix errors           : ',TotPrefixErr);     (* !! 2.9  MM0805 *)
-  WriteLn('* Total pvt/phone errors        : ',TotPvtErr);        (* !! 2.9  MM0805 *)
-  Writeln('* Total phonenumber errors      : ',TotPhoneErr);      (* !! 2.10 MM0811 *)
-  WriteLn('* Total baudrate errors         : ',TotBaudErr);       (* !! 2.9  MM0805 *)
-  WriteLn('* Total flag errors             : ',TotFlagErr);
-  WriteLn('* Total user flag errors        : ',TotUserErr);
-  WriteLn('* Total redundant flags         : ',TotReduErr);
-  WriteLn('* Total duplicate flags         : ',TotDupErr);
-  WriteLn('* Total case conversions        : ',TotCaseConv);      (* !! 2.8  MM0717 *)
-  WriteLn('* Total entries with spaces     : ',TotSpaces);        (* !! 2.14  20010428 *)
-  WriteLn('* Total entries with tail commas: ',TotTailCommas);    (* !! 2.14  20010428 *)
+  WriteLn(#10'* FINAL REPORT FOR ALL PROCESSED NODELIST SEGMENTS:');  (* !! 2.10  MM0811 *)
+  WriteLn('* Total prefix errors            : ', TotPrefixErr);     (* !! 2.9  MM0805 *)
+  WriteLn('* Total pvt/phone errors         : ', TotPvtErr);        (* !! 2.9  MM0805 *)
+  Writeln('* Total phonenumber errors       : ', TotPhoneErr);      (* !! 2.10 MM0811 *)
+  WriteLn('* Total baudrate errors          : ', TotBaudErr);       (* !! 2.9  MM0805 *)
+  WriteLn('* Total flag errors              : ', TotFlagErr);
+  WriteLn('* Total user flag errors         : ', TotUserErr);
+  WriteLn('* Total redundant flags          : ', TotReduErr);
+  WriteLn('* Total duplicate flags          : ', TotDupErr);
+  WriteLn('* Total case conversions         : ', TotCaseConv);      (* !! 2.8  MM0717 *)
+  WriteLn('* Total entries with spaces      : ', TotSpaces);        (* !! 2.14  20010428 *)
+  WriteLn('* Total entries with tail commas : ', TotTailCommas);    (* !! 2.14  20010428 *)
 end.

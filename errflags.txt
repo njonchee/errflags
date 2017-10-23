@@ -257,5 +257,4 @@
     - Removed check for presence of Pvt prefix if phone number is -Unpublished-.
 
     Version 2.17
-    - Try to load errflags.ctl/tab/cmt files if ErrFlags.ctl/tab/cmt files
-      cannot be found.
+    - Added support for a realistic Linux setup.
