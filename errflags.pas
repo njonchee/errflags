@@ -393,6 +393,7 @@ function OpenConfigFile(defaultConfigFileNames : Array of String; var configFile
 		OpenConfigFile := error;
 	end;
 
+{$IFDEF LINUX}
 procedure ExecuteLinuxCommand(var cmd : String);
 	var
 		proc : TProcess;
@@ -402,11 +403,12 @@ procedure ExecuteLinuxCommand(var cmd : String);
 		proc.Options := [poUsePipes, poWaitOnExit];
 		proc.Execute;
 	end;
-
+{$ELSE}
 procedure ExecuteDosCommand(var cmd : String);
 	begin
 		Exec(GetEnv('COMSPEC'), '/C ' + cmd);
 	end;
+{$ENDIF}
 
 procedure ExecuteCommand(lbl : String; var cmd : String; var oldDir : String);
 	begin
@@ -425,6 +427,7 @@ procedure ParseCTLfile;    (* Parses the configuration file  *)
   Var
     Temp1   : String;
     Temp2   : String;
+    Error   : Boolean;
 
   begin
     SegmentNum := 0;
@@ -434,7 +437,7 @@ procedure ParseCTLfile;    (* Parses the configuration file  *)
     NotifyCmd := '';
     NoErrCmd := '';
     Touch := True;                          (* !! 960127 *)
-	OpenConfigFile(DEFAULT_CTL_FILE_NAMES, ctlFileName, ctlFile, true);
+    Error := OpenConfigFile(DEFAULT_CTL_FILE_NAMES, ctlFileName, ctlFile, true);
     While not EOF(CTLFile) do
       begin
         {$I-}
@@ -496,6 +499,7 @@ procedure ParseTabFile;    (* Parses the approved flag file *)
     Temp1,
     Temp2,
     UTemp2  : String;
+    Error   : Boolean;
 
   begin
     BaudDefault := 9600;               (* !! 2.9  MM0805 *)
@@ -506,7 +510,7 @@ procedure ParseTabFile;    (* Parses the approved flag file *)
     ConvNum := 0;                      (* !! 2.8  MM0717 *)
     ReduntNum := 0;
     FillChar(DelEntry,sizeof(DelEntry),0); (* !! 2.11 MM0901 *)
-	OpenConfigFile(DEFAULT_TAB_FILE_NAMES, tabFileName, tabFile, true);
+    Error := OpenConfigFile(DEFAULT_TAB_FILE_NAMES, tabFileName, tabFile, true);
     While not EOF(TabFile) do
       begin
         {$I-}
