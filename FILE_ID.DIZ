@@ -1,8 +1,10 @@
-ErrFlags v2.15 checks/corrects fidonodelist
+ErrFlags v2.18  //  Checks nodelist segments.
 New in this version:
-- User flag length increase from 32 to 40.
-Last time, in Version 2.14:
-- Space and tail comma removals are now counted (that means, only the
-  number of entries in which they occur are counted) and the node
-  number of the offending entry is shown so the originator of the
-  nodelist segment can correct the errors more easily.
+- Verified compatibility with Windows 2000
+  and Windows XP.
+New in previous versions:
+- Added support for path names up to 255
+  characters instead of 8.3 file names; added
+  support for Linux.
+- Removed check for presence of Pvt prefix if
+  phone number is -Unpublished-.
