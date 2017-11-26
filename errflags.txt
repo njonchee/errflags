@@ -1,4 +1,4 @@
-  ErrFlags version 2.17
+  ErrFlags version 2.18
   ---------------------
 
     This program checks incoming nodelist segments for illegal and
@@ -45,9 +45,7 @@
     The following files are necessary for the proper functioning of the
     program (one executable only):
 
-       ERRFLAGS.EXE   Main DOS executable
-       ERRFLAG2.EXE   Main OS/2 executable
-       ERRFLAGw.EXE   Main Win32 executable
+       ERRFLAGS.EXE   Main Win32 executable
        ERRFLAGS.CTL   Main configuration file
        ERRFLAGS.TAB   Approved flag setup file
 
@@ -77,7 +75,7 @@
     This is the configuration file that tells ErrFlags all it has to
     know at run time. Fire up your favourite ASCII editor and change
     the parameters based on the comments in this file.
-    Note that all lines preceeded with the ";" character are ignored,
+    Note that all lines preceded with the ";" character are ignored,
     thus you will have to remove it for keywords you want to use.
 
 
@@ -113,8 +111,7 @@
              to avoid future warnings.
     BEWARE: this is something like a 'second level warning' and will follow
             a WARNING if (an) additional problem(s) is detected.
-    : a simple message telling you what ErrFlags is doing or is going to
-      do.
+    : a simple message telling you what ErrFlags is doing or is going to do.
 
 
   Source code
@@ -129,7 +126,7 @@
     compile ErrFlags for platforms other than what is included in the
     distribution archive.
     If you do change the program I would prefer if you would mail me a copy
-    of the revized source code. Write to Johan Zwiekhorst at
+    of the revised source code. Write to Johan Zwiekhorst at
     2:292/100@fidonet or e-mail me: johan@zwiekhorst.be.
 
 
@@ -257,4 +254,8 @@
     - Removed check for presence of Pvt prefix if phone number is -Unpublished-.
 
     Version 2.17
-    - Added support for a realistic Linux setup.
+    - Added support for path names up to 255 characters instead of 8.3 file
+      names; added support for Linux.
+
+    Version 2.18
+    - Verified compatibility with Windows 2000 and Windows XP.

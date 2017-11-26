@@ -19,7 +19,7 @@
 
 program ErrFlags;
 
-(* ErrFlags v2.17  //  Checks nodelist segments for flag errors.
+(* ErrFlags v2.18  //  Checks nodelist segments for flag errors.
    Copyright 1995-1997 jonny bergdahl data AB. Freeware. All rights deserved.
    Modifications (c) 1999-2006 by Johan Zwiekhorst, 2:292/100
    Modifications (c) 2017 by Niels Joncheere, 2:292/789                       *)
@@ -61,7 +61,9 @@ program ErrFlags;
 (* will take over development from version 2.16 onwards.                      *)
 (* 20170924 2.16     Removed check for presence of Pvt prefix if phone number *)
 (*                   is -Unpublished-.                                        *)
-(* 20171023 2.17     Added support for a realistic Linux setup.               *)
+(* 20171023 2.17     Added support for path names up to 255 characters        *)
+(*                   instead of 8.3 file names; added support for Linux.      *)
+(* 20171126 2.18     Verified compatibility with Windows 2000 and Windows XP. *)
 
 {$IFDEF LINUX}
 Uses dos, process, unix;
@@ -70,11 +72,15 @@ Uses dos;
 {$ENDIF}
 
 Const
-	ErrFlagsVersion = '2.17';
+	ErrFlagsVersion = '2.18';
 	DEFAULT_CTL_FILE_NAMES : Array[1..2] of String = ('ErrFlags.ctl', 'errflags.ctl');
 	DEFAULT_TAB_FILE_NAMES : Array[1..2] of String = ('ErrFlags.tab', 'errflags.tab');
 	DEFAULT_CMT_FILE_NAMES : Array[1..2] of String = ('ErrFlags.cmt', 'errflags.cmt');
+{$IFDEF LINUX}
 	FILE_SEPARATOR : String = '/';
+{$ELSE}
+	FILE_SEPARATOR : String = '\';
+{$ENDIF}
 
   Unpub       = '-Unpublished-';
 
@@ -327,7 +333,6 @@ procedure SignOn;     (* Initialises the program and extracts parameters *)
 
   Var
     StdOut : File;
-    Temp   : String;
 
   begin
     Assign(StdOut,'');
@@ -337,8 +342,7 @@ procedure SignOn;     (* Initialises the program and extracts parameters *)
     WriteLn('Modifications (c) 1999-2006 by Johan Zwiekhorst, 2:292/100');
     WriteLn('Modifications (c) 2017 by Niels Joncheere, 2:292/789');
     WriteLn;
-    Temp := Upper(ParamStr(1));
-    If (Temp[2]='?') then
+    If ParamStr(1) = '/?' then
       begin
         WriteLn('Syntax:');
         WriteLn;
