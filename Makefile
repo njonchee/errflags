@@ -10,8 +10,8 @@ all:	errflags.pas
 install:	errflags
 	cp $^ /usr/local/bin/
 clean:	
-	rm -f errflags.o errflags
+	rm -f errflags.o errflags $(DISTFILE)
 dist:	
-	zip $(DISTFILE) errflags.cmt errflags.ctl errflags.exe errflags.pas errflags.tab errflags.txt FILE_ID.DIZ license.txt Makefile
+	zip $(DISTFILE) errflags.cmt errflags.ctl errflags.exe errflags.pas errflags.tab errflags.txt file_id.diz license.txt Makefile
 hatch:	
 	htick hatch $(DISTFILE) ERRFLAGS desc @DIZ
