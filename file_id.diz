@@ -1,7 +1,7 @@
 ErrFlags v2.19  //  Checks nodelist segments.
 New in this version:
-- Added check for combination of 'Pvt' prefix
-  and 'CM' flag.
+- Added check for combination of Pvt prefix
+  and CM flag.
 New in previous versions:
 - Verified compatibility with Windows 2000
   and Windows XP.

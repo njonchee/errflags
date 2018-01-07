@@ -261,4 +261,4 @@
     - Verified compatibility with Windows 2000 and Windows XP.
 
     Version 2.19
-    - Added check for combination of 'Pvt' prefix and 'CM' flag.
+    - Added check for combination of Pvt prefix and CM flag.

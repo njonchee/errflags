@@ -64,8 +64,7 @@ program ErrFlags;
 (* 20171024 2.17     Added support for path names up to 255 characters        *)
 (*                   instead of 8.3 file names; added support for Linux.      *)
 (* 20171127 2.18     Verified compatibility with Windows 2000 and Windows XP. *)
-(* 20180107 2.19     Added check for combination of 'Pvt' prefix and 'CM'     *)
-(*                   flag.                                                    *)
+(* 20180107 2.19     Added check for combination of Pvt prefix and CM flag.   *)
 
 {$IFDEF LINUX}
 Uses dos, process, unix;
