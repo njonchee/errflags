@@ -7,7 +7,7 @@
 
     Copyright 1995-1997 jonny bergdahl data AB. Freeware. All rights deserved.
     Modifications (c) 1999-2006 by Johan Zwiekhorst, 2:292/100
-    Modifications (c) 2017 by Niels Joncheere, 2:292/789
+    Modifications (c) 2017-2018 by Niels Joncheere, 2:292/789
 
 
   Disclaimer
@@ -259,3 +259,6 @@
 
     Version 2.18
     - Verified compatibility with Windows 2000 and Windows XP.
+
+    Version 2.19
+    - Added check for combination of 'Pvt' prefix and 'CM' flag.

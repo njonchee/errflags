@@ -19,44 +19,44 @@
 
 program ErrFlags;
 
-(* ErrFlags v2.18  //  Checks nodelist segments for flag errors.
+(* ErrFlags v2.19  //  Checks nodelist segments for flag errors.
    Copyright 1995-1997 jonny bergdahl data AB. Freeware. All rights deserved.
    Modifications (c) 1999-2006 by Johan Zwiekhorst, 2:292/100
-   Modifications (c) 2017 by Niels Joncheere, 2:292/789                       *)
+   Modifications (c) 2017-2018 by Niels Joncheere, 2:292/789                  *)
 
-(* Revision history                                                         *)
-(* Date     Version  Change                                                 *)
-(*   960127 2.1      Increased limit of inbound files to 80                 *)
-(*                   Implementation of a 'NoTouch' mode                     *)
-(*   960310 2.2      Implemented stripping of duplicate flags               *)
-(*   960327 2.3      Implemented support for arced files                    *)
-(*                   Bugfix for user flag only nodes                        *)
-(*                   Minor bugs fixed                                       *)
-(*   960415 2.4      Fixed bug with inbound path not being used.            *)
-(*                   Fixed bug with reports being sent to wrong recipient   *)
-(*                   Removed support for REPORTALL and added support for    *)
-(*                   a NOERR notification key word.                         *)
-(*   960528 2.5      Fixed a minor bug regarding input path with no-arc     *)
-(*                   Fixed problem with command line capitalizing           *)
-(*   970129 2.6      Fixed handling of zone mail flags                      *)
-(* Since Jonny Bergdahl is no longer in Fidonet, I (JZ) will take over      *)
-(* starting with version 2.7 on 1999 April 5th                              *)
-(*   990405 2.7 !JZ  Fixed some problems with number and valid. of flags    *)
-(*   MM0717 2.8      Added check for nodelist entry length <= 157;          *)
-(*                   Flag checking is now case-insensitive and flags are    *)
-(*                   made uppercase while their parameters are left alone   *)
-(*   MM0805 2.9      Added baudrate parameter checking                      *)
-(*                   Added checking for 'Pvt' and '-unpublished-' pairing   *)
-(*                   Added checking for valid nodelist entry prefix         *)
-(*   MM0811 2.10     Added check for proper phonenumber                     *)
-(*                   Some cosmetic changes                                  *)
-(*   MM0901 2.11     Added DELENTRY feature                                 *)
-(* 20010414 2.12     Added removal of spaces and tail commas                *)
-(*                   Added recalculation of CRC value                       *)
-(* 20010422 2.13     Header line with CRC is added if it isn't there        *)
-(* 20010428 2.14     Made indications for space and tail comma removal      *)
-(*                   more informative for coordinators                      *)
-(* 20060525 2.15     Increase user flag length from 32 to 40 chars          *)
+(* Revision history                                                           *)
+(* Date     Version  Change                                                   *)
+(*   960127 2.1      Increased limit of inbound files to 80                   *)
+(*                   Implementation of a 'NoTouch' mode                       *)
+(*   960310 2.2      Implemented stripping of duplicate flags                 *)
+(*   960327 2.3      Implemented support for arced files                      *)
+(*                   Bugfix for user flag only nodes                          *)
+(*                   Minor bugs fixed                                         *)
+(*   960415 2.4      Fixed bug with inbound path not being used.              *)
+(*                   Fixed bug with reports being sent to wrong recipient     *)
+(*                   Removed support for REPORTALL and added support for      *)
+(*                   a NOERR notification key word.                           *)
+(*   960528 2.5      Fixed a minor bug regarding input path with no-arc       *)
+(*                   Fixed problem with command line capitalizing             *)
+(*   970129 2.6      Fixed handling of zone mail flags                        *)
+(* Since Jonny Bergdahl is no longer in Fidonet, I (JZ) will take over        *)
+(* starting with version 2.7 on 1999 April 5th                                *)
+(*   990405 2.7 !JZ  Fixed some problems with number and valid. of flags      *)
+(*   MM0717 2.8      Added check for nodelist entry length <= 157;            *)
+(*                   Flag checking is now case-insensitive and flags are      *)
+(*                   made uppercase while their parameters are left alone     *)
+(*   MM0805 2.9      Added baudrate parameter checking                        *)
+(*                   Added checking for 'Pvt' and '-unpublished-' pairing     *)
+(*                   Added checking for valid nodelist entry prefix           *)
+(*   MM0811 2.10     Added check for proper phonenumber                       *)
+(*                   Some cosmetic changes                                    *)
+(*   MM0901 2.11     Added DELENTRY feature                                   *)
+(* 20010414 2.12     Added removal of spaces and tail commas                  *)
+(*                   Added recalculation of CRC value                         *)
+(* 20010422 2.13     Header line with CRC is added if it isn't there          *)
+(* 20010428 2.14     Made indications for space and tail comma removal        *)
+(*                   more informative for coordinators                        *)
+(* 20060525 2.15     Increase user flag length from 32 to 40 chars            *)
 (* Since Johan Zwiekhorst is no longer active in FidoNet, Niels Joncheere     *)
 (* will take over development from version 2.16 onwards.                      *)
 (* 20170924 2.16     Removed check for presence of Pvt prefix if phone number *)
@@ -64,6 +64,8 @@ program ErrFlags;
 (* 20171023 2.17     Added support for path names up to 255 characters        *)
 (*                   instead of 8.3 file names; added support for Linux.      *)
 (* 20171126 2.18     Verified compatibility with Windows 2000 and Windows XP. *)
+(* 20180107 2.19     Added check for combination of 'Pvt' prefix and 'CM'     *)
+(*                   flag.                                                    *)
 
 {$IFDEF LINUX}
 Uses dos, process, unix;
@@ -72,7 +74,7 @@ Uses dos;
 {$ENDIF}
 
 Const
-	ErrFlagsVersion = '2.18';
+	ErrFlagsVersion = '2.19';
 	DEFAULT_CTL_FILE_NAMES : Array[1..2] of String = ('ErrFlags.ctl', 'errflags.ctl');
 	DEFAULT_TAB_FILE_NAMES : Array[1..2] of String = ('ErrFlags.tab', 'errflags.tab');
 	DEFAULT_CMT_FILE_NAMES : Array[1..2] of String = ('ErrFlags.cmt', 'errflags.cmt');
@@ -340,7 +342,7 @@ procedure SignOn;     (* Initialises the program and extracts parameters *)
     WriteLn('ErrFlags v', ErrFlagsVersion, '  //  Checks nodelist segments for flag errors.');
     WriteLn('Copyright 1995-1997 jonny bergdahl data AB. Freeware. All rights deserved.');
     WriteLn('Modifications (c) 1999-2006 by Johan Zwiekhorst, 2:292/100');
-    WriteLn('Modifications (c) 2017 by Niels Joncheere, 2:292/789');
+    WriteLn('Modifications (c) 2017-2018 by Niels Joncheere, 2:292/789');
     WriteLn;
     If ParamStr(1) = '/?' then
       begin
@@ -655,7 +657,7 @@ function PhoneOK (var Inp: String): Boolean;         (* !! 2.10  MM0811 *)
   end;
 
 
-function FixFlags(Inp: String; RepNode: String): String;
+function FixFlags(Inp : String; RepNode : String; Prefix : String) : String;
                                    (* Checks the entry's nodelist flags *)
                                    (* for errors and fixes them.        *)
   Var
@@ -731,6 +733,17 @@ function FixFlags(Inp: String; RepNode: String): String;
             nFlag[L1] := '';
           end;
       end;
+
+	(* Check for combination of 'Pvt' prefix and 'CM' flag: *)
+	If (Prefix = 'Pvt') then
+		For L1 := 1 to nNFlags do
+			If (NFlag[L1] = 'CM') then
+				begin
+					WriteLn('# WARNING: incompatible flag ', NFlag[L1], ' for ', Prefix, ' node ', RepNode);
+					WriteLn(RptFile, '# WARNING: incompatible flag ', NFlag[L1], ' for ', Prefix, ' node ', RepNode);
+					Inc(ThisFlagErr);
+				end;
+
                    (* And for invalid user flags *)
     nUFlags := 0;
     While Length(UsrFlags)>0 Do
@@ -899,7 +912,7 @@ begin
          Baudrate := BaudDefault;
          Inc(ThisBaudErr);
         end;
-      AllFlags := FixFlags(','+Inp, CurrentNode);
+      AllFlags := FixFlags(',' + Inp, CurrentNode, Prefix);
       LenLine := length(Prefix)+length(Node)+length(SystemName)+
             length(Location)+length(AdminName)+length(PhoneNr)+
             length(WordToStr(Baudrate))+length(AllFlags)+6;
@@ -924,7 +937,7 @@ begin
                           WriteLn('= BEWARE: cut ', LenToStrip, ' chars from Flags as well!');
                           WriteLn(RptFile,' BEWARE: cut ', LenToStrip, ' chars from Flags as well!');
                           Delete(AllFlags, length(AllFlags)-LenToStrip+1, LenToStrip);
-                          AllFlags := FixFlags(AllFlags, CurrentNode)  (* check flags again *)
+                          AllFlags := FixFlags(AllFlags, CurrentNode, Prefix) (* Check flags again *)
                          end
                       end;
               end;

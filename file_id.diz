@@ -1,10 +1,10 @@
-ErrFlags v2.18  //  Checks nodelist segments.
+ErrFlags v2.19  //  Checks nodelist segments.
 New in this version:
+- Added check for combination of 'Pvt' prefix
+  and 'CM' flag.
+New in previous versions:
 - Verified compatibility with Windows 2000
   and Windows XP.
-New in previous versions:
 - Added support for path names up to 255
   characters instead of 8.3 file names; added
   support for Linux.
-- Removed check for presence of Pvt prefix if
-  phone number is -Unpublished-.
