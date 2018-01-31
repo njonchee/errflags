@@ -1094,7 +1094,7 @@ procedure CheckSegment(InP, InF, RptF, Notif : String);
         If LastError<>0 then
           begin
             If (LastErr<>2) and (LastErr<>3) then  (* file not found is normal *)
-              WriteLn('! Unable to rename ',InF,' - error ',WordToStr(LastErr));
+              WriteLn('! Unable to rename ',InF,' to ',TempFName,' - error ',WordToStr(LastErr));
             Exit;
           end;
         Assign(OutFile,InF);   (* !! 960127 Moved outfile creation code *)
