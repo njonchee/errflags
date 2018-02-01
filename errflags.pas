@@ -176,37 +176,39 @@ Var
 
   (* Generic functions                                                 *)
 
-function LastError : Word;   (* Saves the last I/O error code *)
+(* Saves the result of the last file I/O operation into the global variable LastErr. *)
+function LastError : Word;
+begin
+	LastErr   := IOResult;
+	LastError := LastErr;
+end;
 
-  begin
-    LastErr := IOresult;
-    LastError := LastErr;
-  end;
+(* Converts the input string to upper case. *)
+function Upper(InputStr : String) : String;
+var
+	i : Integer;
+begin
+	for i := 1 to Length(InputStr) do
+		InputStr[i] := UpCase(InputStr[i]);
+	Upper := InputStr;
+end;
 
-function Upper(Ins: String): String;   (* Uppercase string conversion *)
-  Var
-    L : Integer;
-  begin
-    For L := 1 to length(Ins) do
-      Ins[L] := UpCase(Ins[L]);
-    Upper := Ins;
-  end;
+(* Converts the input string to proper case, i.e., lower case with 1st character capitalized. *)
+function Proper(InputStr : String) : String;
+var
+	i : Integer;
+begin
+	InputStr[1] := UpCase(InputStr[1]);
+	for i := 2 to Length(InputStr) do
+		InputStr[i] := Char(Byte(InputStr[i]) or $20); (* Quick & dirty *)
+	Proper := InputStr;
+end;
 
-function Proper(Ins: String): String;  (* Lowercase string conversion with 1st char Uppercase *)
-  Var
-    L : Integer;
-  begin
-    Ins[1] := UpCase(Ins[1]);
-    for L := 2 to length(Ins) do
-       Ins[L] := Char(Byte(Ins[L]) or $20);  (* quick & dirty *)
-    Proper := Ins;
-  end;
-
-
-function StrToWord(InputString : String) : Word;  (* String to Word *)
+(* Converts the input string into a word. *)
+function StrToWord(InputString : String) : Word;
 var
 	OutputWord : Word;
-{$IFDEF OS2}                            (* !! 2.8 MM0717 *)
+{$IFDEF OS2}                            (* !! 2.8  MM0717   *)
 	Code : LongInt;
 {$ELSE}
 	{$IFDEF WIN32}                      (* !! 2.14 20010428 *)
@@ -222,7 +224,8 @@ begin
 	StrToWord := OutputWord;
 end;
 
-function WordToStr(InputWord : Word) : String;    (* Word to String *)
+(* Converts the input word into a string. *)
+function WordToStr(InputWord : Word) : String;
 var
 	OutputString : String[12];
 begin
@@ -230,12 +233,13 @@ begin
 	WordToStr := OutputString;
 end;
 
-function AddFileSeparator(s : String) : String;
+(* Adds a file separator to the end of the input string, if it is not already present. *)
+function AddFileSeparator(InputStr : String) : String;
 begin
-	if (s = '') or (s[length(s)] = FILE_SEPARATOR) then
-		AddFileSeparator := s
+	if (InputStr = '') or (InputStr[Length(InputStr)] = FILE_SEPARATOR) then
+		AddFileSeparator := InputStr
 	else
-		AddFileSeparator := s + FILE_SEPARATOR;
+		AddFileSeparator := InputStr + FILE_SEPARATOR;
 end;
 
 function FirstWord(var Instr:String):String;
