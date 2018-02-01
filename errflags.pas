@@ -956,8 +956,8 @@ procedure CheckSegment(InP, InF, RptF, Notif : String);
                                 (* Checks complete segment files, creating *)
                                 (* a fixed segment file together with a    *)
                                 (* report file for notification            *)
-  Const
-    TempFName = 'NLSEGtmp.$$$';    (* !! 2.11  MM0901 *)
+(*Const
+    TempFName = 'NLSEGtmp.$$$';*)  (* !! 2.11  MM0901 *)
 
   Type
     Str18 = String[18];
@@ -976,6 +976,7 @@ procedure CheckSegment(InP, InF, RptF, Notif : String);
     CalcCRC  : Boolean;         (* !! 2.12  20010414 *)
     AmDate   : Str18;           (* !! 2.13  20010422 *)
     DayNum   : Str3;            (* !! 2.13  20010422 *)
+    TempFName : String[255];
 
 
   procedure NextFriday (var Datum    : Str18;    (* !! 2.13  20010422 *)
@@ -1077,6 +1078,7 @@ procedure CheckSegment(InP, InF, RptF, Notif : String);
     Default_NLheader := ';A Fidonet Nodelist for Friday, '
                         + AmDate + ' -- Day number '
                         + DayNum + ' : 00000';   (* !! 2.13  20010422 *)
+    TempFName := InF + '.tmp';
     If Touch then               (* !! 960127 No need to erase in NoTouch mode *)
       begin
         Assign(InFile,TempFName);
