@@ -67,9 +67,9 @@ program ErrFlags;
 (* 20180107 2.19     Added check for combination of Pvt prefix and CM flag.   *)
 
 {$IFDEF LINUX}
-Uses dos, process, unix;
+Uses Dos, Process, SysUtils, Unix;
 {$ELSE}
-Uses dos;
+Uses Dos, SysUtils;
 {$ENDIF}
 
 Const
@@ -240,6 +240,17 @@ begin
 		AddFileSeparator := InputStr
 	else
 		AddFileSeparator := InputStr + FILE_SEPARATOR;
+end;
+
+(* Returns a temporary file name for the given file name. *)
+function GetTempFileName(InputFileName : String) : String;
+var
+    LastFileSeparator : Integer;
+    Path              : String[255];
+begin
+    LastFileSeparator := LastDelimiter(FILE_SEPARATOR, InputFileName);
+    Path              := LeftStr(InputFileName, LastFileSeparator);
+    GetTempFileName   := Path + 'NLSEGtmp.$$$';
 end;
 
 function FirstWord(var Instr:String):String;
@@ -960,9 +971,6 @@ procedure CheckSegment(InP, InF, RptF, Notif : String);
                                 (* Checks complete segment files, creating *)
                                 (* a fixed segment file together with a    *)
                                 (* report file for notification            *)
-(*Const
-    TempFName = 'NLSEGtmp.$$$';*)  (* !! 2.11  MM0901 *)
-
   Type
     Str18 = String[18];
     Str3  = String[3];
@@ -1027,13 +1035,13 @@ procedure CheckSegment(InP, InF, RptF, Notif : String);
         begin
           GetDir(0,OldDir);
           ChDir(InP);
-          FindFirst(InFile,Archive,S);
+          Dos.FindFirst(InFile,Archive,S);
           If DOSError=0 then
             begin
               while DOSError=0 do
                 begin
                   InFile := S.Name;
-                  FindNext(S);
+                  Dos.FindNext(S);
                 end;
               Temp := Upper(UnCompress);
               Temp := Copy(UnCompress,1,Pred(Pos('%FILE%',Upper(UnCompress))))+InFile+
@@ -1051,13 +1059,13 @@ procedure CheckSegment(InP, InF, RptF, Notif : String);
             end;
           ChDir(OldDir);
         end;
-      FindFirst(AddFileSeparator(Inp) + Copy(InFile, 1, Pos('.', InFile)) + '*', Archive, S);
+      Dos.FindFirst(AddFileSeparator(Inp) + Copy(InFile, 1, Pos('.', InFile)) + '*', Archive, S);
       if DOSError=0 then
         begin
           While DOSError=0 do
             begin
               ExtractFile := AddFileSeparator(Inp) + S.Name;
-              FindNext(S);
+              Dos.FindNext(S);
             end;
         end;
     end; {ExtractFile}
@@ -1082,7 +1090,7 @@ procedure CheckSegment(InP, InF, RptF, Notif : String);
     Default_NLheader := ';A Fidonet Nodelist for Friday, '
                         + AmDate + ' -- Day number '
                         + DayNum + ' : 00000';   (* !! 2.13  20010422 *)
-    TempFName := InF + '.tmp';
+    TempFName := GetTempFileName(InF);
     If Touch then               (* !! 960127 No need to erase in NoTouch mode *)
       begin
         Assign(InFile,TempFName);
@@ -1094,6 +1102,7 @@ procedure CheckSegment(InP, InF, RptF, Notif : String);
     Assign(InFile,InF);
     If Touch then             (* !! 960127 Don't rename in NoTouch mode *)
       begin
+        WriteLn('DEBUG Renaming ', InF, ' to ', TempFName, '...');
         {$I-}
         Rename(InFile,TempFName);
         {$I+}
