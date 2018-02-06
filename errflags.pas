@@ -1102,7 +1102,6 @@ procedure CheckSegment(InP, InF, RptF, Notif : String);
     Assign(InFile,InF);
     If Touch then             (* !! 960127 Don't rename in NoTouch mode *)
       begin
-        WriteLn('DEBUG Renaming ', InF, ' to ', TempFName, '...');
         {$I-}
         Rename(InFile,TempFName);
         {$I+}
