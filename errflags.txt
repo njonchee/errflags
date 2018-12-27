@@ -1,4 +1,4 @@
-  ErrFlags version 2.18
+  ErrFlags version 2.20
   ---------------------
 
     This program checks incoming nodelist segments for illegal and
@@ -140,9 +140,6 @@
     -  Added a NoTouch mode for those who don't want to fix other peoples
        problems.
 
-    Version 2.1.1
-    - Added ERRFLAG2.EXE, the OS/2 executable.
-
     Version 2.2
     - Added check/removal of duplicate flags.
 
@@ -262,3 +259,7 @@
 
     Version 2.19
     - Added check for combination of Pvt prefix and CM flag.
+
+    Version 2.20
+    - Parametrized maximum entry length introduced in v2.8; cf. the
+      MAXENTRYLENGTH configuration file keyword.

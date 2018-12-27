@@ -74,4 +74,9 @@ NOTIFYPATH \BBS\ErrFlag
 ; the above program.
 ;EXECUTEPATH \BBS\MAKENL
 ;
+; Key word MAXENTRYLENGTH specifies the maximum length for a nodelist entry; if
+; a nodelist entry exceeds this value, its name (and, if necessary, flags) will
+; be cut.
+;MAXENTRYLENGTH 157
+;
 ; // end of file //

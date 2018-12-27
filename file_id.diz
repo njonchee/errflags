@@ -1,10 +1,10 @@
-ErrFlags v2.19  //  Checks nodelist segments.
+ErrFlags v2.20  //  Checks nodelist segments.
 New in this version:
+- Parametrized maximum entry length
+  introduced in v2.8; cf. the MAXENTRYLENGTH
+  configuration file keyword.
+New in previous versions:
 - Added check for combination of Pvt prefix
   and CM flag.
-New in previous versions:
 - Verified compatibility with Windows 2000
   and Windows XP.
-- Added support for path names up to 255
-  characters instead of 8.3 file names; added
-  support for Linux.

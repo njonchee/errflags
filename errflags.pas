@@ -19,7 +19,7 @@
 
 program ErrFlags;
 
-(* ErrFlags v2.19  //  Checks nodelist segments for flag errors.
+(* ErrFlags v2.20  //  Checks nodelist segments for flag errors.
    Copyright 1995-1997 jonny bergdahl data AB. Freeware. All rights deserved.
    Modifications (c) 1999-2006 by Johan Zwiekhorst, 2:292/100
    Modifications (c) 2017-2018 by Niels Joncheere, 2:292/789                  *)
@@ -65,6 +65,8 @@ program ErrFlags;
 (*                   instead of 8.3 file names; added support for Linux.      *)
 (* 20171127 2.18     Verified compatibility with Windows 2000 and Windows XP. *)
 (* 20180107 2.19     Added check for combination of Pvt prefix and CM flag.   *)
+(* 20181227 2.20     Parametrized maximum entry length introduced in v2.8;    *)
+(*                   cf. the MAXENTRYLENGTH configuration file keyword.       *)
 
 {$IFDEF LINUX}
 Uses Dos, Process, SysUtils, Unix;
@@ -73,7 +75,7 @@ Uses Dos, SysUtils;
 {$ENDIF}
 
 Const
-	ErrFlagsVersion = '2.19';
+	ErrFlagsVersion = '2.20';
 	DEFAULT_CTL_FILE_NAMES : Array[1..2] of String = ('ErrFlags.ctl', 'errflags.ctl');
 	DEFAULT_TAB_FILE_NAMES : Array[1..2] of String = ('ErrFlags.tab', 'errflags.tab');
 	DEFAULT_CMT_FILE_NAMES : Array[1..2] of String = ('ErrFlags.cmt', 'errflags.cmt');
@@ -110,68 +112,69 @@ Type
                  end;
 
 Var
-  RptFile  : Text;
+  RptFile         : Text;
   ctlFileName,
   tabFileName,
-  cmtFileName : String[255];
+  cmtFileName     : String[255];
   ctlFile,
   tabFile,
-  cmtFile : Text;
+  cmtFile         : Text;
   DefaultZone,
-  ThisZone    : Word;
+  ThisZone        : Word;
   DefaultNet,
-  ThisNet     : Word;
-  SegmentFile : Array[1..MaxFlags] of TSegmentFile;    (* !! 2.1 960127 !! 2.7 990405: 200 iso 80 *)
-  SegmentNum  : Byte;
+  ThisNet         : Word;
+  MaxEntryLength  : Word;                               (* !! 2.20 20181227 *)
+  SegmentFile     : Array[1..MaxFlags] of TSegmentFile; (* !! 2.1  960127   !! 2.7  990405 *)
+  SegmentNum      : Byte;
   OldDir,
   InboundPath,
   NotifyPath,
   NotifyCmd,
   NoErrCmd,
-  UnCompress  : String;
+  UnCompress      : String;
   ExecutePath,
-  ExecuteCmd  : String;
-  Baudrates   : Array[1..MaxBaudNum] of Word;        (* !! 2.9 MM0805 *)
-  ApprFlags   : Array[1..MaxFlags] of TFlag;
-  CatFlags    : Array[1..MaxFlags] of TFlag;         (* !! 2.6 970129 !! 2.7 990405 *)
-  UserFlags   : Array[1..MaxFlags] of TFlag;
-  ConvFlags   : Array[1..MaxFlags] of TConvFlag;
-  ReduntFlags : Array[1..MaxFlags] of TConvFlag;
-  DelEntry    : Array[1..MaxDelEntry] of TFlag;
-  BaudDefault : Word;                                (* !! 2.9  MM0805 *)
-  BaudNum,                                           (* !! 2.9  MM0805 *)
-  DelEntryNum,                                       (* !! 2.11 MM0901 *)
+  ExecuteCmd      : String;
+  Baudrates       : Array[1..MaxBaudNum] of Word;       (* !! 2.9  MM0805   *)
+  ApprFlags       : Array[1..MaxFlags] of TFlag;
+  CatFlags        : Array[1..MaxFlags] of TFlag;        (* !! 2.6  970129   !! 2.7  990405 *)
+  UserFlags       : Array[1..MaxFlags] of TFlag;
+  ConvFlags       : Array[1..MaxFlags] of TConvFlag;
+  ReduntFlags     : Array[1..MaxFlags] of TConvFlag;
+  DelEntry        : Array[1..MaxDelEntry] of TFlag;
+  BaudDefault     : Word;                               (* !! 2.9  MM0805   *)
+  BaudNum,                                              (* !! 2.9  MM0805   *)
+  DelEntryNum,                                          (* !! 2.11 MM0901   *)
   ApprNum,
-  CatNum,                                            (* !! 2.6  970129 *)
+  CatNum,                                               (* !! 2.6  970129   *)
   UserNum,
   ConvNum,
-  ReduntNum   : Byte;
-  TotPrefixErr,                                  (* !! 2.9  MM0805 *)
-  TotPvtErr,                                     (* !! 2.9  MM0805 *)
-  TotPhoneErr,                                   (* !! 2.10 MM0811 *)
-  TotBaudErr,                                    (* !! 2.9  MM0805 *)
+  ReduntNum       : Byte;
+  TotPrefixErr,                                         (* !! 2.9  MM0805   *)
+  TotPvtErr,                                            (* !! 2.9  MM0805   *)
+  TotPhoneErr,                                          (* !! 2.10 MM0811   *)
+  TotBaudErr,                                           (* !! 2.9  MM0805   *)
   TotFlagErr,
   TotUserErr,
   TotReduErr,
   TotDupErr,
-  TotCaseConv,                                   (* !! 2.8  MM0717 *)
-  TotTailCommas,                                 (* !! 2.14 20010428 *)
-  TotSpaces,                                     (* !! 2.14 20010428 *)
-  ThisPrefixErr,                                 (* !! 2.9  MM0805 *)
-  ThisPvtErr,                                    (* !! 2.9  MM0805 *)
-  ThisPhoneErr,                                  (* !! 2.10 MM0811 *)
-  ThisBaudErr,                                   (* !! 2.9  MM0805 *)
+  TotCaseConv,                                          (* !! 2.8  MM0717   *)
+  TotTailCommas,                                        (* !! 2.14 20010428 *)
+  TotSpaces,                                            (* !! 2.14 20010428 *)
+  ThisPrefixErr,                                        (* !! 2.9  MM0805   *)
+  ThisPvtErr,                                           (* !! 2.9  MM0805   *)
+  ThisPhoneErr,                                         (* !! 2.10 MM0811   *)
+  ThisBaudErr,                                          (* !! 2.9  MM0805   *)
   ThisFlagErr,
   ThisUserErr,
   ThisReduErr,
   ThisDupErr,
-  ThisCaseConv,                                  (* !! 2.8 MM0717 *)
-  ThisTailCommas,                                (* !! 2.14 20010428 *)
-  ThisSpaces  : Word;                            (* !! 2.14 20010428 *)
+  ThisCaseConv,                                         (* !! 2.8  MM0717   *)
+  ThisTailCommas,                                       (* !! 2.14 20010428 *)
+  ThisSpaces      : Word;                               (* !! 2.14 20010428 *)
 
-  LastErr     : Word;
-  Touch,                                         (* !! 2.1 960127 *)
-  AnyProcessed: Boolean;
+  LastErr         : Word;
+  Touch,                                                (* !! 2.1  960127   *)
+  AnyProcessed    : Boolean;
 
 
   (* Generic functions                                                 *)
@@ -450,6 +453,7 @@ procedure ParseCTLfile;    (* Parses the configuration file  *)
     Error   : Boolean;
 
   begin
+    MaxEntryLength := 157; (* Default value *)
     SegmentNum := 0;
     ExecutePath := '';
     ExecuteCmd := '';
@@ -475,7 +479,9 @@ procedure ParseCTLfile;    (* Parses the configuration file  *)
               DefaultZone := StrToWord(StripStr(Temp1));
             If Upper(Temp2)='NET' then
               DefaultNet := StrToWord(StripStr(Temp1));
-            If Upper(Temp2)='NOTOUCH' then          (* !! 960127 *)
+            If Upper(Temp2)='MAXENTRYLENGTH' then       (* !! 2.20 20181227 *)
+              MaxEntryLength := StrToWord(StripStr(Temp1));
+            If Upper(Temp2)='NOTOUCH' then              (* !! 2.1  960127   *)
               Touch := False;
             If Upper(Temp2)='FILE' then
               begin
@@ -930,11 +936,11 @@ begin
       LenLine := length(Prefix)+length(Node)+length(SystemName)+
             length(Location)+length(AdminName)+length(PhoneNr)+
             length(WordToStr(Baudrate))+length(AllFlags)+6;
-      LenToStrip := LenLine - 157;      (* !! MM0717 v2.8 add length check *)
+      LenToStrip := LenLine - MaxEntryLength;           (* !! 2.8  MM0717   !! 2.20 20181227 *)
       If LenToStrip > 0 then
         begin
-         WriteLn('# WARNING: entry for ', CurrentNode, ' of ', LenLine, ' chars cut to 157 for MAKENL');
-         WriteLn(RptFile,' WARNING: entry for ', CurrentNode, ' of ', LenLine, ' chars cut to 157 for MAKENL');
+         WriteLn('# WARNING: entry for ', CurrentNode, ' of ', LenLine, ' chars cut to ', MaxEntryLength, ' for MAKENL');
+         WriteLn(RptFile,' WARNING: entry for ', CurrentNode, ' of ', LenLine, ' chars cut to ', MaxEntryLength, ' for MAKENL');
          If length(SystemName)-1 >= LenToStrip then
            Delete(SystemName, length(SystemName)-LenToStrip+1, LenToStrip)
          else begin
