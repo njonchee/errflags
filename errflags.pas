@@ -760,7 +760,7 @@ function FixFlags(Inp : String; RepNode : String; Prefix : String) : String;
 			If (NFlag[L1] = 'CM') then
 				begin
 					WriteLn('# WARNING: incompatible flag ', NFlag[L1], ' for ', Prefix, ' node ', RepNode);
-					WriteLn(RptFile, '# WARNING: incompatible flag ', NFlag[L1], ' for ', Prefix, ' node ', RepNode);
+					WriteLn(RptFile, ' WARNING: incompatible flag ', NFlag[L1], ' for ', Prefix, ' node ', RepNode);
 					Inc(ThisFlagErr);
 				end;
 
@@ -1156,8 +1156,10 @@ procedure CheckSegment(InP, InF, RptF, Notif : String);
         writeLn(RptFile);
         close(cmtFile);
       end;
-    WriteLn(#10'# Processing file ',InF);
-    WriteLn(RptFile,#10' Processing file ',InF);
+    WriteLn();
+    WriteLn('# Processing file ', InF);
+    WriteLn(RptFile);
+    WriteLn(RptFile, ' Processing file ', InF);
     CalcCRC := false;
     CRCline := '';
     While not Eof(InFile) Do
@@ -1234,7 +1236,8 @@ procedure CheckSegment(InP, InF, RptF, Notif : String);
             exit;
           end;
       end;
-    WriteLn(#10'* SUMMARY REPORT FOR THIS NODELIST SEGMENT:');  (* !! 2.10  MM0811 *)
+    WriteLn();
+    WriteLn('* SUMMARY REPORT FOR THIS NODELIST SEGMENT:');           (* !! 2.10 MM0811   *)
     WriteLn('> Prefix errors            : ', ThisPrefixErr);
     WriteLn('> Pvt/phone errors         : ', ThisPvtErr);
     Writeln('> Phonenumber errors       : ', ThisPhoneErr);
@@ -1244,22 +1247,23 @@ procedure CheckSegment(InP, InF, RptF, Notif : String);
     WriteLn('> Redundant flags          : ', ThisReduErr);
     WriteLn('> Duplicate flags          : ', ThisDupErr);
     WriteLn('> Case conversions         : ', ThisCaseConv);
-    WriteLn('> Entries with spaces      : ', ThisSpaces);              (* !! 2.14  20010428 *)
-    WriteLn('> Entries with tail commas : ', ThisTailCommas);          (* !! 2.14  20010428 *)
-    Writeln(RptFile,#10' SUMMARY REPORT FOR THIS NODELIST SEGMENT:');
-    WriteLn(RptFile,' Prefix errors            : ', ThisPrefixErr);
-    WriteLn(RptFile,' Pvt/phone errors         : ', ThisPvtErr);
-    Writeln(RptFile,' Phonenumber errors       : ', ThisPhoneErr);
-    WriteLn(RptFile,' Baudrate errors          : ', ThisBaudErr);
-    WriteLn(RptFile,' Flag errors              : ', ThisFlagErr);
-    WriteLn(RptFile,' User flag errors         : ', ThisUserErr);
-    WriteLn(RptFile,' Redundant flags          : ', ThisReduErr);
-    WriteLn(RptFile,' Duplicate flags          : ', ThisDupErr);
-    WriteLn(RptFile,' Case conversions         : ', ThisCaseConv);
-    WriteLn(RptFile,' Entries with spaces      : ', ThisSpaces);       (* !! 2.14  20010428 *)
-    WriteLn(RptFile,' Entries with tail commas : ', ThisTailCommas);   (* !! 2.14  20010428 *)
+    WriteLn('> Entries with spaces      : ', ThisSpaces);             (* !! 2.14 20010428 *)
+    WriteLn('> Entries with tail commas : ', ThisTailCommas);         (* !! 2.14 20010428 *)
     WriteLn(RptFile);
-    WriteLn(RptFile,' // ErrFlags v', ErrFlagsVersion, ' by Jonny Bergdahl, Johan Zwiekhorst, Niels Joncheere'); (* !! 990405 *)
+    Writeln(RptFile, ' SUMMARY REPORT FOR THIS NODELIST SEGMENT:');
+    WriteLn(RptFile, ' Prefix errors            : ', ThisPrefixErr);
+    WriteLn(RptFile, ' Pvt/phone errors         : ', ThisPvtErr);
+    Writeln(RptFile, ' Phonenumber errors       : ', ThisPhoneErr);
+    WriteLn(RptFile, ' Baudrate errors          : ', ThisBaudErr);
+    WriteLn(RptFile, ' Flag errors              : ', ThisFlagErr);
+    WriteLn(RptFile, ' User flag errors         : ', ThisUserErr);
+    WriteLn(RptFile, ' Redundant flags          : ', ThisReduErr);
+    WriteLn(RptFile, ' Duplicate flags          : ', ThisDupErr);
+    WriteLn(RptFile, ' Case conversions         : ', ThisCaseConv);
+    WriteLn(RptFile, ' Entries with spaces      : ', ThisSpaces);     (* !! 2.14 20010428 *)
+    WriteLn(RptFile, ' Entries with tail commas : ', ThisTailCommas); (* !! 2.14 20010428 *)
+    WriteLn(RptFile);
+    WriteLn(RptFile, ' // ErrFlags v', ErrFlagsVersion, ' by Jonny Bergdahl, Johan Zwiekhorst, Niels Joncheere');
     Close(RptFile);
     Inc(TotPrefixErr, ThisPrefixErr);         (* !! 2.9  MM0805 *)
     Inc(TotPvtErr, ThisPvtErr);               (* !! 2.9  MM0805 *)
@@ -1334,7 +1338,8 @@ begin                          (* Main program  *)
       ExecuteCommand('Execute', ExecuteCmd, OldDir);
       ChDir(OldDir);
     end;
-  WriteLn(#10'* FINAL REPORT FOR ALL PROCESSED NODELIST SEGMENTS:');  (* !! 2.10  MM0811 *)
+  WriteLn();
+  WriteLn('* FINAL REPORT FOR ALL PROCESSED NODELIST SEGMENTS:');  (* !! 2.10  MM0811 *)
   WriteLn('* Total prefix errors            : ', TotPrefixErr);     (* !! 2.9  MM0805 *)
   WriteLn('* Total pvt/phone errors         : ', TotPvtErr);        (* !! 2.9  MM0805 *)
   Writeln('* Total phonenumber errors       : ', TotPhoneErr);      (* !! 2.10 MM0811 *)
