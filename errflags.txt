@@ -1,4 +1,4 @@
-  ErrFlags version 2.20
+  ErrFlags version 2.21
   ---------------------
 
     This program checks incoming nodelist segments for illegal and
@@ -263,3 +263,7 @@
     Version 2.20
     - Parametrized maximum entry length introduced in v2.8; cf. the
       MAXENTRYLENGTH configuration file keyword.
+
+    Version 2.21
+    - Parametrized check for combination of prefix and flag introduced in
+      v2.19; fixed newline bug in same.

@@ -272,7 +272,7 @@ CONVERT V34+ V34
 ;   CONVERT HDG MOB 23.Sep.2017
 ;
 ;      +-----------------------------------------+
-;      !          Redundancy definition          !
+;      !  Redundancy definition (between flags)  !
 ;      +-----------------------------------------+
 ;
 REDUNDANT HST MNP
@@ -299,6 +299,12 @@ REDUNDANT ITN IP
 REDUNDANT IVM IP
 REDUNDANT #@@ !@@
 REDUNDANT CM ICM
+;
+;      +---------------------------------------------------+
+;      !  Redundancy definition (between prefix and flag)  !
+;      +---------------------------------------------------+
+;
+REDUNDANTFORPREFIX Pvt CM
 ;
 ;      +-----------------------------------------+
 ;      !          Special statements             !

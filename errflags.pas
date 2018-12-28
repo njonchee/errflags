@@ -19,7 +19,7 @@
 
 program ErrFlags;
 
-(* ErrFlags v2.20  //  Checks nodelist segments for flag errors.
+(* ErrFlags v2.21  //  Checks nodelist segments for flag errors.
    Copyright 1995-1997 jonny bergdahl data AB. Freeware. All rights deserved.
    Modifications (c) 1999-2006 by Johan Zwiekhorst, 2:292/100
    Modifications (c) 2017-2018 by Niels Joncheere, 2:292/789                  *)
@@ -67,6 +67,8 @@ program ErrFlags;
 (* 20180107 2.19     Added check for combination of Pvt prefix and CM flag.   *)
 (* 20181227 2.20     Parametrized maximum entry length introduced in v2.8;    *)
 (*                   cf. the MAXENTRYLENGTH configuration file keyword.       *)
+(* 20181228 2.21     Parametrized check for combination of prefix and flag    *)
+(*                   introduced in v2.19; fixed newline bug in same.          *)
 
 {$IFDEF LINUX}
 Uses Dos, Process, SysUtils, Unix;
@@ -75,7 +77,7 @@ Uses Dos, SysUtils;
 {$ENDIF}
 
 Const
-	ErrFlagsVersion = '2.20';
+	ErrFlagsVersion = '2.21';
 	DEFAULT_CTL_FILE_NAMES : Array[1..2] of String = ('ErrFlags.ctl', 'errflags.ctl');
 	DEFAULT_TAB_FILE_NAMES : Array[1..2] of String = ('ErrFlags.tab', 'errflags.tab');
 	DEFAULT_CMT_FILE_NAMES : Array[1..2] of String = ('ErrFlags.cmt', 'errflags.cmt');
@@ -112,69 +114,71 @@ Type
                  end;
 
 Var
-  RptFile         : Text;
+  RptFile             : Text;
   ctlFileName,
   tabFileName,
-  cmtFileName     : String[255];
+  cmtFileName         : String[255];
   ctlFile,
   tabFile,
-  cmtFile         : Text;
+  cmtFile             : Text;
   DefaultZone,
-  ThisZone        : Word;
+  ThisZone            : Word;
   DefaultNet,
-  ThisNet         : Word;
-  MaxEntryLength  : Word;                               (* !! 2.20 20181227 *)
-  SegmentFile     : Array[1..MaxFlags] of TSegmentFile; (* !! 2.1  960127   !! 2.7  990405 *)
-  SegmentNum      : Byte;
+  ThisNet             : Word;
+  MaxEntryLength      : Word;                               (* !! 2.20 20181227 *)
+  SegmentFile         : Array[1..MaxFlags] of TSegmentFile; (* !! 2.1  960127   !! 2.7  990405 *)
+  SegmentNum          : Byte;
   OldDir,
   InboundPath,
   NotifyPath,
   NotifyCmd,
   NoErrCmd,
-  UnCompress      : String;
+  UnCompress          : String;
   ExecutePath,
-  ExecuteCmd      : String;
-  Baudrates       : Array[1..MaxBaudNum] of Word;       (* !! 2.9  MM0805   *)
-  ApprFlags       : Array[1..MaxFlags] of TFlag;
-  CatFlags        : Array[1..MaxFlags] of TFlag;        (* !! 2.6  970129   !! 2.7  990405 *)
-  UserFlags       : Array[1..MaxFlags] of TFlag;
-  ConvFlags       : Array[1..MaxFlags] of TConvFlag;
-  ReduntFlags     : Array[1..MaxFlags] of TConvFlag;
-  DelEntry        : Array[1..MaxDelEntry] of TFlag;
-  BaudDefault     : Word;                               (* !! 2.9  MM0805   *)
-  BaudNum,                                              (* !! 2.9  MM0805   *)
-  DelEntryNum,                                          (* !! 2.11 MM0901   *)
+  ExecuteCmd          : String;
+  Baudrates           : Array[1..MaxBaudNum] of Word;       (* !! 2.9  MM0805   *)
+  ApprFlags           : Array[1..MaxFlags] of TFlag;
+  CatFlags            : Array[1..MaxFlags] of TFlag;        (* !! 2.6  970129   !! 2.7  990405 *)
+  UserFlags           : Array[1..MaxFlags] of TFlag;
+  ConvFlags           : Array[1..MaxFlags] of TConvFlag;
+  ReduntFlags         : Array[1..MaxFlags] of TConvFlag;
+  ReduntForPrefFlags  : Array[1..MaxFlags] of TConvFlag;    (* !! 2.21 20181228 *)
+  DelEntry            : Array[1..MaxDelEntry] of TFlag;
+  BaudDefault         : Word;                               (* !! 2.9  MM0805   *)
+  BaudNum,                                                  (* !! 2.9  MM0805   *)
+  DelEntryNum,                                              (* !! 2.11 MM0901   *)
   ApprNum,
-  CatNum,                                               (* !! 2.6  970129   *)
+  CatNum,                                                   (* !! 2.6  970129   *)
   UserNum,
   ConvNum,
-  ReduntNum       : Byte;
-  TotPrefixErr,                                         (* !! 2.9  MM0805   *)
-  TotPvtErr,                                            (* !! 2.9  MM0805   *)
-  TotPhoneErr,                                          (* !! 2.10 MM0811   *)
-  TotBaudErr,                                           (* !! 2.9  MM0805   *)
+  ReduntNum,
+  ReduntForPrefNum    : Byte;                               (* !! 2.21 20181228 *)
+  TotPrefixErr,                                             (* !! 2.9  MM0805   *)
+  TotPvtErr,                                                (* !! 2.9  MM0805   *)
+  TotPhoneErr,                                              (* !! 2.10 MM0811   *)
+  TotBaudErr,                                               (* !! 2.9  MM0805   *)
   TotFlagErr,
   TotUserErr,
   TotReduErr,
   TotDupErr,
-  TotCaseConv,                                          (* !! 2.8  MM0717   *)
-  TotTailCommas,                                        (* !! 2.14 20010428 *)
-  TotSpaces,                                            (* !! 2.14 20010428 *)
-  ThisPrefixErr,                                        (* !! 2.9  MM0805   *)
-  ThisPvtErr,                                           (* !! 2.9  MM0805   *)
-  ThisPhoneErr,                                         (* !! 2.10 MM0811   *)
-  ThisBaudErr,                                          (* !! 2.9  MM0805   *)
+  TotCaseConv,                                              (* !! 2.8  MM0717   *)
+  TotTailCommas,                                            (* !! 2.14 20010428 *)
+  TotSpaces,                                                (* !! 2.14 20010428 *)
+  ThisPrefixErr,                                            (* !! 2.9  MM0805   *)
+  ThisPvtErr,                                               (* !! 2.9  MM0805   *)
+  ThisPhoneErr,                                             (* !! 2.10 MM0811   *)
+  ThisBaudErr,                                              (* !! 2.9  MM0805   *)
   ThisFlagErr,
   ThisUserErr,
   ThisReduErr,
   ThisDupErr,
-  ThisCaseConv,                                         (* !! 2.8  MM0717   *)
-  ThisTailCommas,                                       (* !! 2.14 20010428 *)
-  ThisSpaces      : Word;                               (* !! 2.14 20010428 *)
+  ThisCaseConv,                                             (* !! 2.8  MM0717   *)
+  ThisTailCommas,                                           (* !! 2.14 20010428 *)
+  ThisSpaces        : Word;                                 (* !! 2.14 20010428 *)
 
-  LastErr         : Word;
-  Touch,                                                (* !! 2.1  960127   *)
-  AnyProcessed    : Boolean;
+  LastErr           : Word;
+  Touch,                                                    (* !! 2.1  960127   *)
+  AnyProcessed      : Boolean;
 
 
   (* Generic functions                                                 *)
@@ -599,6 +603,16 @@ procedure ParseTabFile;    (* Parses the approved flag file *)
                     ReduntFlags[ReduntNum].Last := Upper(FirstWord(Temp1));
                   end;
               end;
+            If UTemp2='REDUNDANTFORPREFIX' then
+              begin
+                Temp2 := Upper(FirstWord(Temp1));
+                while Temp1<>'' do
+                  begin
+                    Inc(ReduntForPrefNum);
+                    ReduntForPrefFlags[ReduntForPrefNum].First := Temp2;
+                    ReduntForPrefFlags[ReduntForPrefNum].Last := Upper(FirstWord(Temp1));
+                  end;
+              end;
             if UTemp2='DELENTRY' then                    (* !! 2.11 MM0901 *)
               while Temp1<>'' do
                 begin
@@ -754,15 +768,22 @@ function FixFlags(Inp : String; RepNode : String; Prefix : String) : String;
           end;
       end;
 
-	(* Check for combination of 'Pvt' prefix and 'CM' flag: *)
-	If (Prefix = 'Pvt') then
-		For L1 := 1 to nNFlags do
-			If (NFlag[L1] = 'CM') then
+	(* Check for redundant combination of prefix and flag: *)
+	For L1 := 1 to ReduntForPrefNum do
+	begin
+		If (Prefix = ReduntForPrefFlags[L1].First) then
+		begin
+			For L2 := 1 to nNFlags do
+			begin
+				If (NFlag[L2] = ReduntForPrefFlags[L1].Last) then
 				begin
 					WriteLn('# WARNING: incompatible flag ', NFlag[L1], ' for ', Prefix, ' node ', RepNode);
 					WriteLn(RptFile, ' WARNING: incompatible flag ', NFlag[L1], ' for ', Prefix, ' node ', RepNode);
 					Inc(ThisFlagErr);
 				end;
+			end;
+		end;
+	end;
 
                    (* And for invalid user flags *)
     nUFlags := 0;
