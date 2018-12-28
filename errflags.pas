@@ -532,14 +532,15 @@ procedure ParseTabFile;    (* Parses the approved flag file *)
     Error   : Boolean;
 
   begin
-    BaudDefault := 9600;               (* !! 2.9  MM0805 *)
-    BaudNum := 0;                      (* !! 2.9  MM0805 *)
-    DelEntryNum := 0;                  (* !! 2.11 MM0901 *)
-    ApprNum := 0;
-    UserNum := 0;
-    ConvNum := 0;                      (* !! 2.8  MM0717 *)
-    ReduntNum := 0;
-    FillChar(DelEntry,sizeof(DelEntry),0); (* !! 2.11 MM0901 *)
+    BaudDefault      := 9600;                 (* !! 2.9  MM0805   *)
+    BaudNum          := 0;                    (* !! 2.9  MM0805   *)
+    DelEntryNum      := 0;                    (* !! 2.11 MM0901   *)
+    ApprNum          := 0;
+    UserNum          := 0;
+    ConvNum          := 0;                    (* !! 2.8  MM0717   *)
+    ReduntNum        := 0;
+    ReduntForPrefNum := 0;                    (* !! 2.21 20181228 *)
+    FillChar(DelEntry, SizeOf(DelEntry), 0);  (* !! 2.11 MM0901   *)
     Error := OpenConfigFile(DEFAULT_TAB_FILE_NAMES, tabFileName, tabFile, true);
     While not EOF(TabFile) do
       begin
@@ -605,7 +606,7 @@ procedure ParseTabFile;    (* Parses the approved flag file *)
               end;
             If UTemp2='REDUNDANTFORPREFIX' then
               begin
-                Temp2 := Upper(FirstWord(Temp1));
+                Temp2 := FirstWord(Temp1);
                 while Temp1<>'' do
                   begin
                     Inc(ReduntForPrefNum);
@@ -779,7 +780,7 @@ function FixFlags(Inp : String; RepNode : String; Prefix : String) : String;
 				begin
 					WriteLn('# WARNING: incompatible flag ', NFlag[L1], ' for ', Prefix, ' node ', RepNode);
 					WriteLn(RptFile, ' WARNING: incompatible flag ', NFlag[L1], ' for ', Prefix, ' node ', RepNode);
-					Inc(ThisFlagErr);
+					Inc(ThisReduErr);
 				end;
 			end;
 		end;
@@ -1174,12 +1175,9 @@ procedure CheckSegment(InP, InF, RptF, Notif : String);
             ReadLn(cmtFile, temp);
             WriteLn(RptFile,Temp);
           end;
-        writeLn(RptFile);
         close(cmtFile);
       end;
-    WriteLn();
     WriteLn('# Processing file ', InF);
-    WriteLn(RptFile);
     WriteLn(RptFile, ' Processing file ', InF);
     CalcCRC := false;
     CRCline := '';
@@ -1360,16 +1358,16 @@ begin                          (* Main program  *)
       ChDir(OldDir);
     end;
   WriteLn();
-  WriteLn('* FINAL REPORT FOR ALL PROCESSED NODELIST SEGMENTS:');  (* !! 2.10  MM0811 *)
-  WriteLn('* Total prefix errors            : ', TotPrefixErr);     (* !! 2.9  MM0805 *)
-  WriteLn('* Total pvt/phone errors         : ', TotPvtErr);        (* !! 2.9  MM0805 *)
-  Writeln('* Total phonenumber errors       : ', TotPhoneErr);      (* !! 2.10 MM0811 *)
-  WriteLn('* Total baudrate errors          : ', TotBaudErr);       (* !! 2.9  MM0805 *)
-  WriteLn('* Total flag errors              : ', TotFlagErr);
-  WriteLn('* Total user flag errors         : ', TotUserErr);
-  WriteLn('* Total redundant flags          : ', TotReduErr);
-  WriteLn('* Total duplicate flags          : ', TotDupErr);
-  WriteLn('* Total case conversions         : ', TotCaseConv);      (* !! 2.8  MM0717 *)
-  WriteLn('* Total entries with spaces      : ', TotSpaces);        (* !! 2.14  20010428 *)
-  WriteLn('* Total entries with tail commas : ', TotTailCommas);    (* !! 2.14  20010428 *)
+  WriteLn('* FINAL REPORT FOR ALL PROCESSED NODELIST SEGMENTS:');   (* !! 2.10 MM0811   *)
+  WriteLn('> Total prefix errors            : ', TotPrefixErr);     (* !! 2.9  MM0805   *)
+  WriteLn('> Total Pvt/phone errors         : ', TotPvtErr);        (* !! 2.9  MM0805   *)
+  Writeln('> Total phonenumber errors       : ', TotPhoneErr);      (* !! 2.10 MM0811   *)
+  WriteLn('> Total baudrate errors          : ', TotBaudErr);       (* !! 2.9  MM0805   *)
+  WriteLn('> Total flag errors              : ', TotFlagErr);
+  WriteLn('> Total user flag errors         : ', TotUserErr);
+  WriteLn('> Total redundant flags          : ', TotReduErr);
+  WriteLn('> Total duplicate flags          : ', TotDupErr);
+  WriteLn('> Total case conversions         : ', TotCaseConv);      (* !! 2.8  MM0717   *)
+  WriteLn('> Total entries with spaces      : ', TotSpaces);        (* !! 2.14 20010428 *)
+  WriteLn('> Total entries with tail commas : ', TotTailCommas);    (* !! 2.14 20010428 *)
 end.
