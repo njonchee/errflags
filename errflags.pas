@@ -19,10 +19,10 @@
 
 program ErrFlags;
 
-(* ErrFlags v2.21  //  Checks nodelist segments for flag errors.
+(* ErrFlags v2.22  //  Checks nodelist segments for flag errors.
    Copyright 1995-1997 jonny bergdahl data AB. Freeware. All rights deserved.
    Modifications (c) 1999-2006 by Johan Zwiekhorst, 2:292/100
-   Modifications (c) 2017-2018 by Niels Joncheere, 2:292/789                  *)
+   Modifications (c) 2017-2021 by Niels Joncheere, 2:292/789                  *)
 
 (* Revision history                                                           *)
 (* Date     Version  Change                                                   *)
@@ -69,6 +69,7 @@ program ErrFlags;
 (*                   cf. the MAXENTRYLENGTH configuration file keyword.       *)
 (* 20181228 2.21     Parametrized check for combination of prefix and flag    *)
 (*                   introduced in v2.19; fixed newline bug in same.          *)
+(* 20211003 2.22     Added number of explicitly deleted entries to reports.   *)
 
 {$IFDEF LINUX}
 Uses Dos, Process, SysUtils, Unix;
@@ -77,7 +78,7 @@ Uses Dos, SysUtils;
 {$ENDIF}
 
 Const
-	ErrFlagsVersion = '2.21';
+	ErrFlagsVersion = '2.22';
 	DEFAULT_CTL_FILE_NAMES : Array[1..2] of String = ('ErrFlags.ctl', 'errflags.ctl');
 	DEFAULT_TAB_FILE_NAMES : Array[1..2] of String = ('ErrFlags.tab', 'errflags.tab');
 	DEFAULT_CMT_FILE_NAMES : Array[1..2] of String = ('ErrFlags.cmt', 'errflags.cmt');
@@ -164,6 +165,7 @@ Var
   TotCaseConv,                                              (* !! 2.8  MM0717   *)
   TotTailCommas,                                            (* !! 2.14 20010428 *)
   TotSpaces,                                                (* !! 2.14 20010428 *)
+  TotDelEntry,                                              (* !! 2.22 20211003 *)
   ThisPrefixErr,                                            (* !! 2.9  MM0805   *)
   ThisPvtErr,                                               (* !! 2.9  MM0805   *)
   ThisPhoneErr,                                             (* !! 2.10 MM0811   *)
@@ -174,7 +176,8 @@ Var
   ThisDupErr,
   ThisCaseConv,                                             (* !! 2.8  MM0717   *)
   ThisTailCommas,                                           (* !! 2.14 20010428 *)
-  ThisSpaces        : Word;                                 (* !! 2.14 20010428 *)
+  ThisSpaces,                                               (* !! 2.14 20010428 *)
+  ThisDelEntry      : Word;                                 (* !! 2.22 20211003 *)
 
   LastErr           : Word;
   Touch,                                                    (* !! 2.1  960127   *)
@@ -363,7 +366,7 @@ procedure SignOn;     (* Initialises the program and extracts parameters *)
     WriteLn('ErrFlags v', ErrFlagsVersion, '  //  Checks nodelist segments for flag errors.');
     WriteLn('Copyright 1995-1997 jonny bergdahl data AB. Freeware. All rights deserved.');
     WriteLn('Modifications (c) 1999-2006 by Johan Zwiekhorst, 2:292/100');
-    WriteLn('Modifications (c) 2017-2018 by Niels Joncheere, 2:292/789');
+    WriteLn('Modifications (c) 2017-2021 by Niels Joncheere, 2:292/789');
     WriteLn;
     If ParamStr(1) = '/?' then
       begin
@@ -987,11 +990,13 @@ begin
       ParseNodeLine := Prefix+comma+Node+comma+SystemName+comma+Location+
             comma+AdminName+comma+PhoneNr+comma+WordToStr(Baudrate)+AllFlags
     end
-  else begin
-         WriteLn('# WARNING: entry for ', CurrentNode, ', SysOp ', AdminName,', removed.');
-         WriteLn(RptFile,' WARNING: entry for ', CurrentNode, ', SysOp ', AdminName,', removed.');
-         ParseNodeLine := ''
-       end
+  else
+    begin
+      WriteLn('# WARNING: entry for ', CurrentNode, ', SysOp ', AdminName,', removed.');
+      WriteLn(RptFile,' WARNING: entry for ', CurrentNode, ', SysOp ', AdminName,', removed.');
+      ParseNodeLine := '';
+      Inc(ThisDelEntry)                                 (* !! 2.22  20211003 *)
+    end
 end;
 
 
@@ -1114,6 +1119,7 @@ procedure CheckSegment(InP, InF, RptF, Notif : String);
     ThisCaseConv := 0;          (* !! 2.8 MM0717 *)
     ThisSpaces := 0;            (* !! 2.14  20010424 *)
     ThisTailCommas := 0;        (* !! 2.14  20010424 *)
+    ThisDelEntry := 0;          (* !! 2.22  20211003 *)
     NextFriday(AmDate, DayNum); (* !! 2.13  20010422 *)
     Default_NLheader := ';A Fidonet Nodelist for Friday, '
                         + AmDate + ' -- Day number '
@@ -1268,6 +1274,7 @@ procedure CheckSegment(InP, InF, RptF, Notif : String);
     WriteLn('> Case conversions         : ', ThisCaseConv);
     WriteLn('> Entries with spaces      : ', ThisSpaces);             (* !! 2.14 20010428 *)
     WriteLn('> Entries with tail commas : ', ThisTailCommas);         (* !! 2.14 20010428 *)
+    WriteLn('> Deleted entries          : ', ThisDelEntry);           (* !! 2.22 20211003 *)
     WriteLn(RptFile);
     Writeln(RptFile, ' SUMMARY REPORT FOR THIS NODELIST SEGMENT:');
     WriteLn(RptFile, ' Prefix errors            : ', ThisPrefixErr);
@@ -1281,6 +1288,7 @@ procedure CheckSegment(InP, InF, RptF, Notif : String);
     WriteLn(RptFile, ' Case conversions         : ', ThisCaseConv);
     WriteLn(RptFile, ' Entries with spaces      : ', ThisSpaces);     (* !! 2.14 20010428 *)
     WriteLn(RptFile, ' Entries with tail commas : ', ThisTailCommas); (* !! 2.14 20010428 *)
+    WriteLn(RptFile, ' Deleted entries          : ', ThisDelEntry);   (* !! 2.22 20211003 *)
     WriteLn(RptFile);
     WriteLn(RptFile, ' // ErrFlags v', ErrFlagsVersion, ' by Jonny Bergdahl, Johan Zwiekhorst, Niels Joncheere');
     Close(RptFile);
@@ -1295,6 +1303,7 @@ procedure CheckSegment(InP, InF, RptF, Notif : String);
     Inc(TotCaseConv,ThisCaseConv);            (* !! 2.8  MM0717 *)
     Inc(TotSpaces, ThisSpaces);               (* !! 2.14  20010428 *)
     Inc(TotTailCommas, ThisTailCommas);       (* !! 2.14  20010428 *)
+    Inc(TotDelEntry, ThisDelEntry);           (* !! 2.22  20211003 *)
     AnyProcessed := True;
     If ThisPvtErr+ThisBaudErr+ThisFlagErr+ThisUserErr+ThisReduErr+ThisDupErr > 0 then      (* !! 2.9 MM0805 *)
       begin
@@ -1370,4 +1379,5 @@ begin                          (* Main program  *)
   WriteLn('> Total case conversions         : ', TotCaseConv);      (* !! 2.8  MM0717   *)
   WriteLn('> Total entries with spaces      : ', TotSpaces);        (* !! 2.14 20010428 *)
   WriteLn('> Total entries with tail commas : ', TotTailCommas);    (* !! 2.14 20010428 *)
+  WriteLn('> Total deleted entries          : ', TotDelEntry);      (* !! 2.22 20211003 *)
 end.

@@ -1,9 +1,8 @@
-ErrFlags v2.21  //  Checks nodelist segments.
+ErrFlags v2.22  //  Checks nodelist segments.
 New in this version:
+- Added number of explicitly deleted entries
+  to reports.
+New in previous versions:
 - Parametrized check for combination of
   prefix and flag introduced in v2.19; fixed
   newline bug in same.
-New in previous versions:
-- Parametrized maximum entry length
-  introduced in v2.8; cf. the MAXENTRYLENGTH
-  configuration file keyword.
