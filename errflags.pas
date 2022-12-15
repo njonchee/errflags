@@ -19,10 +19,12 @@
 
 program ErrFlags;
 
-(* ErrFlags v2.22  //  Checks nodelist segments for flag errors.
+(* ErrFlags v2.23  //  Checks nodelist segments for flag errors.
    Copyright 1995-1997 jonny bergdahl data AB. Freeware. All rights deserved.
    Modifications (c) 1999-2006 by Johan Zwiekhorst, 2:292/100
-   Modifications (c) 2017-2021 by Niels Joncheere, 2:292/789                  *)
+   Modifications (c) 2017-2021 by Niels Joncheere, 2:292/789
+   Bug fixes (c) 2022 by Wilfred van Velzen, 2:280/464                        *)
+
 
 (* Revision history                                                           *)
 (* Date     Version  Change                                                   *)
@@ -781,8 +783,8 @@ function FixFlags(Inp : String; RepNode : String; Prefix : String) : String;
 			begin
 				If (NFlag[L2] = ReduntForPrefFlags[L1].Last) then
 				begin
-					WriteLn('# WARNING: incompatible flag ', NFlag[L1], ' for ', Prefix, ' node ', RepNode);
-					WriteLn(RptFile, ' WARNING: incompatible flag ', NFlag[L1], ' for ', Prefix, ' node ', RepNode);
+					WriteLn('# WARNING: incompatible flag ', NFlag[L2], ' for ', Prefix, ' node ', RepNode);
+					WriteLn(RptFile, ' WARNING: incompatible flag ', NFlag[L2], ' for ', Prefix, ' node ', RepNode);
 					Inc(ThisReduErr);
 				end;
 			end;
@@ -884,6 +886,11 @@ begin
       delete(Inp, i, 1);
       i := pos(' ', Inp)
     end;
+  if Length(Inp)=0 then
+  begin
+    ParseNodeLine := '';
+    Exit;
+  end;
   DoDelCommas := (Inp[length(Inp)] = ',');  (* !! 2.12  20010414 - remove all tail comma's *)
   while Inp[length(Inp)] = ',' do dec(Inp[0]);
   Prefix := Proper(Extract(Inp));
@@ -1077,8 +1084,8 @@ procedure CheckSegment(InP, InF, RptF, Notif : String);
                   Dos.FindNext(S);
                 end;
               Temp := Upper(UnCompress);
-              Temp := Copy(UnCompress,1,Pred(Pos('%FILE%',Upper(UnCompress))))+InFile+
-                    Copy(UnCompress,Pos('%FILE%',Upper(UnCompress))+6,255);
+              Temp := Copy(UnCompress,1,Pred(Pos('%FILE%',Temp)))+InFile+
+                    Copy(UnCompress,Pos('%FILE%',Temp)+6,255);
               Exec(GetEnv('COMSPEC'),'/C '+Temp);
               Assign(TmpFile,InFile);
               {$I-}
@@ -1171,7 +1178,7 @@ procedure CheckSegment(InP, InF, RptF, Notif : String);
     {$I+}
     If LastError<>0 then
       begin
-        WriteLn('! Unable to create ',InF,' - error ',WordToStr(LastErr));
+        WriteLn('! Unable to create ',RptF,' - error ',WordToStr(LastErr));
         Exit;
       end;
     if not OpenConfigFile(DEFAULT_CMT_FILE_NAMES, cmtFileName, cmtFile, false) then
@@ -1327,13 +1334,13 @@ procedure CheckSegment(InP, InF, RptF, Notif : String);
         writeLn('! Unable to CD to path ',NotifyPath, ' - error ',LastErr);
         exit;
       end;
-    If Pos('%NODE%',Temp)<>0 then
+    If Pos('%NODE%',Upper(Temp))<>0 then
       Temp := Copy(Temp,1,Pred(Pos('%NODE%',Upper(Temp))))+Notif+
-            Copy(Temp,Pos('%NODE%',Upper(Temp))+6,255);
-    If Pos('%FILE%',Temp)<>0 then
+              Copy(Temp,Pos('%NODE%',Upper(Temp))+6,255);
+    If Pos('%FILE%',Upper(Temp))<>0 then
       Temp := Copy(Temp,1,Pred(Pos('%FILE%',Upper(Temp))))+RptF+
-            Copy(Temp,Pos('%FILE%',Upper(Temp))+6,255);
-	ExecuteCommand('Notify', Temp, OldDir);
+              Copy(Temp,Pos('%FILE%',Upper(Temp))+6,255);
+    ExecuteCommand('Notify', Temp, OldDir);
   end;
 
 Var
@@ -1357,14 +1364,13 @@ begin                          (* Main program  *)
   For Loop := 1 to SegmentNum do
     with SegmentFile[Loop] do
       CheckSegment(InboundPath,FileName,RptFile,Notifier);
-  If AnyProcessed and (NotifyCmd<>'') then
+  If AnyProcessed and (ExecuteCmd<>'') then
     begin
       ChDir(ExecutePath);
       {$I+}
       If LastError<>0 then
         writeLn('! Unable to CD to path ',ExecutePath, ' - error ',LastErr);
       ExecuteCommand('Execute', ExecuteCmd, OldDir);
-      ChDir(OldDir);
     end;
   WriteLn();
   WriteLn('* FINAL REPORT FOR ALL PROCESSED NODELIST SEGMENTS:');   (* !! 2.10 MM0811   *)
