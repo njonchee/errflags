@@ -28,10 +28,11 @@ import sys
 import time
 
 # Constants
-ErrFlagsVersion = '2.99.9 beta'
+ErrFlagsVersion = '2.99.10 beta'
 codec     = 'latin_1'
 comma     = ','
 crlf      = '\r\n'
+eof       = chr(26)
 daynumstr = " -- Day number "
 unpub     = "-Unpublished-"
 DEFAULT_CTL_FILE_NAMES = ('ErrFlags.ctl', 'errflags.ctl')
@@ -755,7 +756,7 @@ def CheckSegment(inbound_path, segment_filename, report_filename, notify_node):
 
   for line in InFile:
     line = line.rstrip()    # remove CR
-    if line and line[0] == chr(26):  # Ignore 'soft' EOF character
+    if line and line[0] == eof:  # Ignore 'soft' EOF character
       line = line[1:]
       if not line:
         continue
@@ -774,6 +775,7 @@ def CheckSegment(inbound_path, segment_filename, report_filename, notify_node):
 
   InFile.close()
   if Touch:
+    OutFile.write(eof)
     OutFile.close()
     os.remove(infname)
     crc_line = crc_line.rstrip('0123456789') + ("%05d" % crc)
@@ -790,8 +792,7 @@ def CheckSegment(inbound_path, segment_filename, report_filename, notify_node):
     print(crc_line, file=OutFile)
     if not is_crcline(line):
       print(line, file=OutFile)
-    for line in InFile:
-      print(line.rstrip(), file=OutFile)
+    OutFile.write(InFile.read())
     InFile.close()
     OutFile.close()
     try:
