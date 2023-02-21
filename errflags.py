@@ -26,9 +26,10 @@ import os.path
 import subprocess
 import sys
 import time
+from fnmatch import fnmatchcase
 
 # Constants
-ErrFlagsVersion = '2.99.10 beta'
+ErrFlagsVersion = '3.0.0'
 codec     = 'latin_1'
 comma     = ','
 crlf      = '\r\n'
@@ -62,6 +63,7 @@ TotBaudErr     = 0
 TotCaseConv    = 0
 TotConverted   = 0
 TotDelEntry    = 0
+TotDelNode     = 0
 TotDupErr      = 0
 TotFlagErr     = 0
 TotPhoneErr    = 0
@@ -81,6 +83,7 @@ ThisPrefixErr  = 0
 ThisSpaces     = 0
 ThisTailCommas = 0
 ThisDelEntry   = 0
+ThisDelNode    = 0
 ThisPhoneErr   = 0
 ThisPvtErr     = 0
 ThisBaudErr    = 0
@@ -105,6 +108,7 @@ class TConvFlag:
 
 SegmentFiles       = []
 DelEntrys          = []
+DelNodes           = []
 Baudrates          = []
 ApprFlags          = []
 CatFlags           = []
@@ -208,7 +212,7 @@ def print_and_report(msg, prechar='#'):
 def SignOn():
   global ctlFileName, oldDir
 
-  print("ErrFlags V" + ErrFlagsVersion, " Copyright (C) 2022  Wilfred van Velzen")
+  print("ErrFlags V" + ErrFlagsVersion, " Copyright (C) 2022-2023  Wilfred van Velzen")
   print(" //  Checks nodelist segments for flag errors.")
   print("This program comes with ABSOLUTELY NO WARRANTY")
   print("This is free software, and you are welcome to redistribute it")
@@ -314,7 +318,7 @@ def ParseCTLFile():
 
 # Parses the approved flag file
 def ParseTabFile():
-  global tabFileName, BaudDefault, Baudrates, ApprFlags, CatFlags, UserFlags, ConvFlags, ReduntFlags, ReduntForPrefFlags, DelEntrys
+  global tabFileName, BaudDefault, Baudrates, ApprFlags, CatFlags, UserFlags, ConvFlags, ReduntFlags, ReduntForPrefFlags, DelEntrys, DelNodes
 
   error, tabFileName, tab_file = openConfigFile(DEFAULT_TAB_FILE_NAMES, tabFileName, True)
   for line in tab_file:
@@ -372,6 +376,10 @@ def ParseTabFile():
         while line:
           del_entry, line = first_word(line)
           DelEntrys.append(del_entry.upper())
+      elif key_word == 'DELNODE':
+        while line:
+          del_node, line = first_word(line)
+          DelNodes.append(del_node)
   tab_file.close()
 
 
@@ -528,7 +536,7 @@ def FixFlags(flags, report_node, prefix):
 # we do not check them but checks should go here
 def ParseNodeLine(line: str):
   global ThisZone, ThisNet \
-       , ThisBaudErr, ThisPhoneErr, ThisPrefixErr, ThisPvtErr, ThisSpaces, ThisTailCommas, ThisDelEntry
+       , ThisBaudErr, ThisPhoneErr, ThisPrefixErr, ThisPvtErr, ThisSpaces, ThisTailCommas, ThisDelEntry, ThisDelNode
 
   do_del_spaces = ' ' in line
   if do_del_spaces:
@@ -553,6 +561,12 @@ def ParseNodeLine(line: str):
   if do_del_spaces:
     print_and_report('WARNING: space(s) removed for ' + CurrentNode)
     ThisSpaces += 1
+
+  for delNode in DelNodes:
+    if fnmatchcase(CurrentNode, delNode):
+      print_and_report('WARNING: entry for ' + CurrentNode + ', removed.')
+      ThisDelNode += 1
+      return ""
 
   if line and line[-1] == comma:
     line = line.rstrip(comma)
@@ -687,9 +701,9 @@ def ExtractFile(inbound_path: str, filename: str):
 def CheckSegment(inbound_path, segment_filename, report_filename, notify_node):
   global ThisZone, ThisNet, cmtFileName, RptFile, oldDir, AnyProcessed, NotifyCmd, NoErrCmd\
        , ThisPrefixErr, ThisPvtErr, ThisPhoneErr, ThisBaudErr, ThisFlagErr, ThisUserErr, ThisReduErr, ThisDupErr\
-       , ThisCaseConv, ThisConverted, ThisSpaces, ThisTailCommas, ThisDelEntry\
+       , ThisCaseConv, ThisConverted, ThisSpaces, ThisTailCommas, ThisDelEntry, ThisDelNode\
        , TotPrefixErr, TotPvtErr, TotPhoneErr, TotBaudErr, TotFlagErr, TotUserErr, TotReduErr, TotDupErr\
-       , TotCaseConv, TotConverted, TotSpaces, TotTailCommas, TotDelEntry
+       , TotCaseConv, TotConverted, TotSpaces, TotTailCommas, TotDelEntry, TotDelNode
 
   segment_filename = ExtractFile(inbound_path, segment_filename)
   if not segment_filename:
@@ -710,6 +724,7 @@ def CheckSegment(inbound_path, segment_filename, report_filename, notify_node):
   ThisSpaces     = 0
   ThisTailCommas = 0
   ThisDelEntry   = 0
+  ThisDelNode    = 0
   AmDate, DayNum = NextFriday()
   Default_NLheader = ';A Fidonet Nodelist for ' + AmDate + daynumstr + DayNum + ' : 00000'
   OutFile   = None
@@ -817,6 +832,7 @@ def CheckSegment(inbound_path, segment_filename, report_filename, notify_node):
   print_and_report('Entries with spaces      : %d' % ThisSpaces, prechar='>')
   print_and_report('Entries with tail commas : %d' % ThisTailCommas, prechar='>')
   print_and_report('Deleted entries          : %d' % ThisDelEntry, prechar='>')
+  print_and_report('Deleted nodes            : %d' % ThisDelNode, prechar='>')
   print()
   print("\n // ErrFlags v" + ErrFlagsVersion, file=RptFile)
   RptFile.close()
@@ -834,6 +850,7 @@ def CheckSegment(inbound_path, segment_filename, report_filename, notify_node):
   TotSpaces    += ThisSpaces
   TotTailCommas+= ThisTailCommas
   TotDelEntry  += ThisDelEntry
+  TotDelNode   += ThisDelNode
   AnyProcessed = True
 
   if ThisPrefixErr + ThisPvtErr + ThisPhoneErr + ThisBaudErr + ThisFlagErr + ThisUserErr + ThisReduErr + ThisDupErr > 0:
@@ -884,7 +901,7 @@ def executecmd_when_any_processed():
 
 def final_report():
   global TotPrefixErr, TotPvtErr, TotPhoneErr, TotBaudErr, TotFlagErr, TotUserErr \
-       , TotReduErr, TotDupErr, TotCaseConv, TotConverted, TotSpaces, TotTailCommas, TotDelEntry
+       , TotReduErr, TotDupErr, TotCaseConv, TotConverted, TotSpaces, TotTailCommas, TotDelEntry, TotDelNode
   print()
   print('* FINAL REPORT FOR ALL PROCESSED NODELIST SEGMENTS:')
   print('> Total prefix errors            : %d' % TotPrefixErr)
@@ -900,6 +917,7 @@ def final_report():
   print('> Total entries with spaces      : %d' % TotSpaces)
   print('> Total entries with tail commas : %d' % TotTailCommas)
   print('> Total deleted entries          : %d' % TotDelEntry)
+  print('> Total deleted nodes            : %d' % TotDelNode)
 
 
 def main():
