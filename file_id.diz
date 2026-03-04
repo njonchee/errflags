@@ -1,8 +1,8 @@
-ErrFlags v2.22  //  Checks nodelist segments.
+ErrFlags v2.23  //  Checks nodelist segments.
 New in this version:
+- Handle prefix followed by space instead of
+  comma; apply bug fixes by Wilfred van
+  Velzen, 2:280/464.
+New in previous versions:
 - Added number of explicitly deleted entries
   to reports.
-New in previous versions:
-- Parametrized check for combination of
-  prefix and flag introduced in v2.19; fixed
-  newline bug in same.
