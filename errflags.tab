@@ -109,7 +109,7 @@
 : ***             with Avian-IP                                   ***
 ; *** 24 OCT 13 : "INA-V6"-flag removed due to no-one interested  ***
 ; *** 06 JUN 14 : INTRODUCTION "INO4"                             ***
-; *** 06 JUN 14 : Allowing "*" as argument for the follwing flags ***
+; *** 06 JUN 14 : Allowing "*" as argument for the following flags***
 ; ***             IBN, IFC, IFT, ITN and IVM                      ***
 ; *** 08 SEP 17 : Introduction of AFS user-flag to indicate a     ***
 : ***             mobile node using an Aftershock implementation  ***
@@ -118,9 +118,24 @@
 ; *** 11 SEP 17 : Introduction of MOB user-flag to indicate a     ***
 : ***             mobile node using an unidentified platform or   ***
 ; ***             implementation                                  ***
-; *** 23 SEP 17 : Discontinuation of the AFS- and HDG-user-flqgs  ***
+; *** 23 SEP 17 : Discontinuation of the AFS- and HDG-user-flags  ***
 : ***             due to redundancy with MOB.                     ***
 ; ***             The MOB user-flag is kept.                      ***
+; *** 03 APR 18 : BEER user-flag introduced                       ***
+; *** 14 JUN 18 : BEER user-flag discontinued                     ***
+; *** 28 DEC 18 : New version ERRFLAGS.EXE   V2.20                ***
+; *** 28 DEC 18 : Flags AVI4 and AVI6 discontiued                 ***
+; *** 01 JAN 19 : New version ERRFLAGS.EXE   V2.21                ***
+; *** 19 APR 21 : Introduction of the "TRACE"-flag for testing    ***
+; *** 03 MAY 21 : BEER user-flag re-introduced                    ***
+; *** 11 MAY 21 : BEER user-flag discontinued                     ***
+; *** 11 MAY 21 : BEER-flag introduced compliant with FSP-1041    ***
+; *** 11 OCT 21 : New version ERRFLAGS.EXE   V2.22                ***
+; *** 11 JAN 22 : Discontinue SDS user-flag (unused)              ***
+; *** 13 JAN 22 : Discontinue MOB user-flag                       ***
+; *** 22 NOV 22 : Nuking of "New Sysop" stuff from ZONE2          ***
+; *** 07 DEC 22 : Nuking of "New Sysop" stuff from all ZONE-files ***
+; *** 29 SEP 23 : Discontinue EVY-flag                            ***
 ; *******************************************************************
 ;
 ; ? matches any characters
@@ -209,15 +224,15 @@ FLAGS IUC IUC:*
 FLAGS INA:*
 ; FLAGS INA-V6:*
 FLAGS IRD:*
-FLAGS AVI4:*
-FLAGS AVI6:*
+; FLAGS AVI4:*
+; FLAGS AVI6:*
 FLAGS INO4
 ;
 ;      +------------------------------+
 ;      !        E-mail flags          !
 ;      +------------------------------+
 ;
-FLAGS EVY EVY:*
+; FLAGS EVY EVY:*
 FLAGS EMA EMA:*
 FLAGS ETX ETX:*
 ;
@@ -225,7 +240,8 @@ FLAGS ETX ETX:*
 ;      !        Other flags           !
 ;      +------------------------------+
 ;
-FLAGS PING ICM
+FLAGS PING ICM TRACE
+FLAGS BEER BEER:*
 ;
 ;      +------------------------------------+
 ;      !          Online time flag          !
@@ -238,21 +254,24 @@ FLAGS T$$
 ;
 USER NC REC NEC ENC
 USER RPK NPK
-USER SDS SMH
+USER SMH
 USER CDP
 USER DOM:* 
 USER DO4:* 
 USER DO3:* 
 USER DO2:*
-USER MOB
 ;
 ;      +--------------------------------------+
 ;      !          Removed USER flags          !
 ;      +--------------------------------------+
 ;
-; USER K12 (05.Sep.2003)
-; USER AFS  23.Sep.2017
-; USER HDG  23.Sep.2017
+; USER K12    05.Sep.2003
+; USER AFS    23.Sep.2017
+; USER HDG    23.Sep.2017
+; USER BEER:* 14.Jun.2018 Re-introduced 03.May.2021
+;             Removed again 11.May.2021
+; USER SDS    11.Jan.2022
+; USER MOB    13.Jan.2022
 ;
 ;      +-----------------------------------------+
 ;      !          Online time user flag          !
@@ -272,7 +291,7 @@ CONVERT V34+ V34
 ;   CONVERT HDG MOB 23.Sep.2017
 ;
 ;      +-----------------------------------------+
-;      !  Redundancy definition (between flags)  !
+;      !          Redundancy definition          !
 ;      +-----------------------------------------+
 ;
 REDUNDANT HST MNP
@@ -300,16 +319,15 @@ REDUNDANT IVM IP
 REDUNDANT #@@ !@@
 REDUNDANT CM ICM
 ;
-;      +---------------------------------------------------+
-;      !  Redundancy definition (between prefix and flag)  !
-;      +---------------------------------------------------+
-;
 REDUNDANTFORPREFIX Pvt CM
 ;
 ;      +-----------------------------------------+
 ;      !          Special statements             !
 ;      +-----------------------------------------+
 ;
+DELENTRY Jura_Lagno
+DELENTRY New_SysOp
+DELENTRY New_Fido_SysOp
 ; DELENTRY xxxxxxxxxx_xxxxxxxxxx
 ;
 ;                      // end of file //
