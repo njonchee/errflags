@@ -71,7 +71,7 @@ program ErrFlags;
 (*                   introduced in v2.19; fixed newline bug in same.          *)
 (* 20211003 2.22     Added number of explicitly deleted entries to reports.   *)
 (* 20260304 2.23     Handle prefix followed by space instead of comma;        *)
-(*                   apply bug fixes by Wilfred Van Velzen, 2:280/464.        *)
+(*                   apply bug fixes by Wilfred van Velzen, 2:280/464.        *)
 
 {$IFDEF LINUX}
 Uses Dos, Process, RegExpr, SysUtils, Unix;

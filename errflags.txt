@@ -1,4 +1,4 @@
-  ErrFlags version 2.22
+  ErrFlags version 2.23
   ---------------------
 
     This program checks incoming nodelist segments for illegal and
@@ -7,7 +7,7 @@
 
     Copyright 1995-1997 jonny bergdahl data AB. Freeware. All rights deserved.
     Modifications (c) 1999-2006 by Johan Zwiekhorst, 2:292/100
-    Modifications (c) 2017-2021 by Niels Joncheere, 2:292/789
+    Modifications (c) 2017-2026 by Niels Joncheere, 2:292/789
 
 
   Disclaimer
@@ -270,3 +270,7 @@
 
     Version 2.22
     - Added number of explicitly deleted entries to reports.
+
+    Version 2.23
+    - Handle prefix followed by space instead of comma; apply bug fixes by
+      Wilfred van Velzen, 2:280/464.
